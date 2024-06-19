@@ -1,0 +1,20 @@
+.form-group {
+    margin-bottom: 10px;
+}
+
+.Add_Course {
+    font-size: 16px;
+    font-weight: 400;
+}
+
+td .btn-class {
+    color: #ffffff;
+    background-color: #1e91cf;
+    border-color: #1e91cf;
+}
+
+td .btn-class:hover {
+    color: #ffffff;
+    background-color: #1e91cf;
+    border-color: #1e91cf;
+}

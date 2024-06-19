@@ -1,0 +1,36 @@
+{% load static %}
+{% load bootstrap_icons %}
+
+{% block course_list %}
+<div class="container" id="specific-div">
+ 
+        <div class="row">
+            <div class="col-12 mx-auto">
+                <div class="panel panel-default border">
+                    <div class="panel-heading ps-3">
+                        <h3 class="panel-title border-bottom pb-2"> {% bs_icon 'pencil' %}  <span class="Add_Course">Add Logo</span></h3>
+                    </div>
+                    <div class="panel-body bg-white px-3 py-3">
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="title">Name</label>
+                                <div>
+                                    <input type="text" name="name" id="title" class="form-control" autocomplete="off">
+                                </div>
+                            </div>
+                
+                            <div class="form-group">
+                                <label for="image">Logo</label>
+                                <input type="file" name="logo" id="images" class="form-control-file">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+   
+</div>
+{% endblock %}

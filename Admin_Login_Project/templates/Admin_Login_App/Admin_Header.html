@@ -1,0 +1,50 @@
+{% extends 'Admin_Login_App/base.html' %}
+{% load static %}
+{% load bootstrap_icons %}
+
+{% block content %}
+
+<div class="container-fluid" id="header">
+    <div class="row">
+        <div class="col-2 icon-div border">
+            <a class="navbar-brand" href="#">
+                <!-- <button class="navbar-toggler tog" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    {% bs_icon 'list' %}
+                </button> -->
+                <img src="{% static '/images/logo.png' %}" class="hideimg">
+            </a>
+        </div>
+        <div class="col-10 ">
+            <div class="collapse navbar-collapse d-flex justify-content-end navbar-div navi" id="navbarSupportedContent">
+                <ul class="navbar-nav mb-2 mb-lg-0">
+                    <div class="row">
+                        <div class="col demo-div">
+                            <li class="nav-item dropdown border">
+                                <a class="nav-link dropdown-toggle " href="#" id="user" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img id="profile-img" src="{% static '/images/profile.webp' %}" alt="profile">
+                                    Demo User
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-ul">
+                                    <li><a class="dropdown-item ps-4 pe-4 pt-2 pb-2" href="#">{% bs_icon 'person-circle' %} Your Profile</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li class="dropdown-store">Stores</li>
+                                    <li><a class="dropdown-item ps-4 pe-4 pt-2 pb-2" href="#">My Demo shop</a></li>
+                                </ul>
+                            </li>
+                        </div>
+                        <div class="col logout-div">
+                            <li class="nav-item float-start">
+                                <a class="nav-link active logout" aria-current="page" href="/logout">
+                                    <?xml version="1.0" ?><svg height="14" viewBox="0 0 1792 1792" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M704 1440q0 4 1 20t.5 26.5-3 23.5-10 19.5-20.5 6.5h-320q-119 0-203.5-84.5t-84.5-203.5v-704q0-119 84.5-203.5t203.5-84.5h320q13 0 22.5 9.5t9.5 22.5q0 4 1 20t.5 26.5-3 23.5-10 19.5-20.5 6.5h-320q-66 0-113 47t-47 113v704q0 66 47 113t113 47h312l11.5 1 11.5 3 8 5.5 7 9 2 13.5zm928-544q0 26-19 45l-544 544q-19 19-45 19t-45-19-19-45v-288h-448q-26 0-45-19t-19-45v-384q0-26 19-45t45-19h448v-288q0-26 19-45t45-19 45 19l544 544q19 19 19 45z"/></svg> 
+                                    <span class="log">Logout</span>
+                                </a>
+                            </li>
+                        </div>
+                    </div>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% load static %}
+{% load bootstrap_icons %}
+
+{% block sidenavbar %}
+<div class="col-2 p-0">
+    <div class="bg-dark text-white py-2 px-2 nav-div">
+        <h6>Navigation</h6>
+    </div>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/dashboard">
+                {% bs_icon 'speedometer2'%} Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/courses">{% bs_icon 'speedometer2'%} Courses </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/partners">{% bs_icon 'speedometer2'%} Placement Partners </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/testimonial">{% bs_icon 'speedometer2'%} Testimonial</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/placement_stories">{% bs_icon 'speedometer2'%} Placement Stories </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/faq">{% bs_icon 'speedometer2'%} FAQ </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/blog">{% bs_icon 'speedometer2'%} Blog</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/careers">{% bs_icon 'speedometer2'%} Careers </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">{% bs_icon 'speedometer2'%} Settings </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/report" aria-disabled="true">{% bs_icon 'speedometer2'%} Report</a>
+        </li>
+    </ul>
+</div>
+
+{% endblock %}
+
+{% block scripts%}
+
+
+{% endblock %}

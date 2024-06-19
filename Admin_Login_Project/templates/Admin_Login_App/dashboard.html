@@ -1,0 +1,94 @@
+{% load static %}
+{% load bootstrap_icons %}
+
+{% block dashboard %}
+
+<div class="col-10" id="content">
+    <div class="row py-3">
+        <div class="col-10">
+            <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                <div class="container-fluid p-0">
+                    <a class="navbar-brand Dashboard" href="#">
+                        <h1>Dashboard</h1>
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse " id="navbarSupportedContent">
+                        <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+                            <ol class="breadcrumb navbar-div">
+                                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                                <li class="breadcrumb-item active text-info" aria-current="page">Dashboard</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <div class="col-2 d-flex justify-content-end">
+            <button type="button" class="btn btn-info" id="gear">{% bs_icon 'gear'%}</button>
+        </div>
+    </div>
+
+    <div class="row card-div">
+        <div class="col-12 col-lg-3 col-md-6 col-sm-12">
+            <div class="cards title-primary">
+                <div class="card-header">
+                    <h6>Total Orders<span class="pull-right">0%</span></h6>
+                </div>
+                <div class="card-body">
+                    {% bs_icon 'cart-fill' %}
+                    <h2 class="pull-right">294</h2>
+                </div>
+                <div class="card-footer text-body-secondary">
+                    <a href="#">view more...</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-3 col-md-6 col-sm-12">
+            <div class="cards title-primary">
+                <div class="card-header">
+                    <h6>Total Sale <span class="pull-right">0%</span></h6>
+                </div>
+                <div class="card-body">
+                    {% bs_icon 'credit-card-fill' %}
+                    <h2 class="pull-right">100.4K</h2>
+                </div>
+                <div class="card-footer text-body-secondary">
+                    <a href="#">view more...</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-3 col-md-6 col-sm-12">
+            <div class="cards title-primary">
+                <div class="card-header">
+                    <h6>Total Customers <span class="pull-right">0%</span></h6>
+                </div>
+                <div class="card-body">
+                    {% bs_icon 'person-fill' %}
+                    <h2 class="pull-right">851</h2>
+                </div>
+                <div class="card-footer text-body-secondary">
+                    <a href="#">view more...</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-3 col-md-6 col-sm-12">
+            <div class="cards title-primary">
+                <div class="card-header">
+                    <h6>People Online <span class="pull-right">0%</span></h6>
+                </div>
+                <div class="card-body">
+                    {% bs_icon 'people-fill' %}
+                    <h2 class="pull-right">0</h2>
+                </div>
+                <div class="card-footer text-body-secondary">
+                    <a href="#">view more...</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% load static %}
+{% load bootstrap_icons %}
+
+{% block course_list %}
+<div class="container" id="specific-div">
+
+    <div class="row">
+        <div class="col-12 mx-auto">
+            <div class="panel panel-default border">
+                <div class="panel-heading ps-3">
+                    <h3 class="panel-title border-bottom pb-2"> {% bs_icon 'pencil' %} <span class="Add_Course">Edit
+                            Courses</span></h3>
+                </div>
+
+
+                <!-- tabs display -->
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <button class="nav-link text-secondary active" onclick="OpenCourse(event, 'Add_Course')"
+                            aria-current="page" href="#">Add Course</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-secondary" onclick="OpenCourse(event, 'tech_stack')"
+                            href="#">Technology Stack</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-secondary" onclick="OpenCourse(event, 'course_curriculum')"
+                            href="#">Course Curriculum</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-secondary" onclick="OpenCourse(event, 'course_fees')"
+                            href="#">Course Fees</button>
+                    </li>
+                </ul>
+                <!-- tabs display end -->
+
+                <!-- Add Course -->
+
+                <div class="panel-body bg-white px-3 py-3 tabcontent" id="Add_Course">
+                    <form id="courseForm" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id_Title">Course Name</label>
+                            <div>
+                                <input type="text" name="Title" id="id_Title" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_Description">Description</label><br>
+                            {{ form.Description }}
+                        </div>
+
+                        <!-- <div class="form-group">
+                            <label for="id_Technologies">Topics</label>
+                            <input type="text" name="Technologies" id="id_Technologies" class="form-control">
+                        </div> -->
+
+                        <div class="form-group">
+                            <label for="id_Technologies">Topics</label>
+                            <div id="technologiesContainer">
+                                <input type="text" name="Technologies" id="id_Technologies" class="form-control">
+                            </div>
+                            <button type="button" onclick="addTechnologyField()"
+                                class="btn btn-sm btn-success mt-2">+</button>
+                        </div>
+                        <button type="button" onclick="getTechnologiesValues()" class="btn btn-sm btn-primary mt-2">Get
+                            Values</button>
+
+                        <div class="form-group">
+                            <label for="id_Images">Banner Images</label>
+                            <input type="file" name="images" onchange="checkFileSize(this)" accept="image/*"
+                                id="id_Images">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            {{form.status}}
+                        </div>
+                        <button type="button" onclick="InsertCourses()" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+
+                <!-- Add course end -->
+
+                <!-- Technology Stack start -->
+
+                <div class="panel-body bg-white px-3 py-3 tabcontent" id="tech_stack">
+                    <form id="courseForm" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id_description">Description</label>
+                            <textarea id="id_description" name="Description" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="images">Images</label>
+                            <input type="file" name="images" id="images" accept="images/*" class="form-control-file"
+                                onchange="checkFileSize(this)">
+                        </div>
+
+                        <button type="button" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+
+                <!-- Technology Stack end -->
+
+                <!-- Add course_curriculum -->
+
+                <div class="panel-body bg-white px-3 py-3 tabcontent" id="course_curriculum">
+                    <form id="courseForm" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="title">Course Curriculum</label>
+                            <div>
+                                <input type="text" name="Title" id="title" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="technologies">Weeks</label>
+                            <input type="text" name="Technologies" id="technologies" class="form-control"
+                                autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="id_description">Description</label>
+                            <textarea id="id_description" name="Description" class="form-control"></textarea>
+                        </div>
+
+                        <button type="button" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+
+                <!-- Add course_curriculum end -->
+
+                <!-- Add course_fees -->
+
+                <div class="panel-body bg-white px-3 py-3 tabcontent" id="course_fees">
+                    <form id="courseForm" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="title">Course fees</label>
+                            <div>
+                                <input type="text" name="Title" id="title" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_description">Description</label>
+                            <textarea id="id_description" name="Description" class="form-control"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="technologies">Level Type</label>
+                            <input type="text" name="Technologies" id="technologies" class="form-control"
+                                autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="technologies">Duration</label>
+                            <input type="text" name="Technologies" id="technologies" class="form-control"
+                                autocomplete="off">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_description">Level Type Description</label>
+                            <textarea id="id_description" name="Description" class="form-control"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="images">Logo</label>
+                            <input type="file" name="images" id="images" accept="images/*" class="form-control-file"
+                                onchange="checkFileSize(this)">
+                        </div>
+
+                        <button type="button" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+
+                <!-- Add course_fees end -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

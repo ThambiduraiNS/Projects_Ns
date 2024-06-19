@@ -1,0 +1,47 @@
+{% load static %}
+{% load bootstrap_icons %}
+
+{% block blog_list %}
+<div class="container" id="specific-div">
+ 
+        <div class="row">
+            <div class="col-12 mx-auto">
+                <div class="panel panel-default border">
+                    <div class="panel-heading ps-3">
+                        <h3 class="panel-title border-bottom pb-2"> {% bs_icon 'pencil' %}  <span class="Add_Course">Edit Blog</span></h3>
+                    </div>
+                    <div class="panel-body bg-white px-3 py-3">
+                        <form method="post" action="{% url 'update_blog' datas.id %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="title">Title</label>
+                                <div>
+                                    <input type="text" name="title" id="title" value="{{ datas.title }}" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="id_description">Description</label>
+                                <textarea id="id_description" name="description" class="form-control"> {{ datas.description }} </textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="title">Courses</label>
+                                <div>
+                                    <input type="text" name="course" id="title" value="{{ datas.course }}" class="form-control" autocomplete="off">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="images">Images</label>
+                                <img src="{{ datas.images.url }}" alt="{{ datas.images }}" style="max-height: 40px;">
+                                <input type="file" name="images" id="images" class="form-control-file">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+   
+</div>
+{% endblock %}

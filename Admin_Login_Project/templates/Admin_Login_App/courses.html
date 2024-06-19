@@ -1,0 +1,379 @@
+{% extends 'Admin_Login_App/base.html' %}
+{% load static %}
+{% load bootstrap_icons %}
+
+<!-- title -->
+{% block title %} Courses {% endblock %}
+
+<!-- Link css -->
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/header.css' %}">
+<link rel="stylesheet" href="{% static 'css/course_list.css' %}">
+<link rel="stylesheet" href="{% static 'css/course_page.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+
+{% endblock %}
+
+<!-- link js -->
+{% block link_js %}
+
+<script type="text/javascript" src="{% static 'ckeditor/ckeditor-init.js' %}" async></script>
+<script type="text/javascript" src="{% static 'ckeditor/ckeditor/ckeditor.js' %}" async></script>
+
+{% endblock %}
+
+<!-- header -->
+{% block header %}
+{% include 'Admin_Login_App/Admin_Header.html' %}
+{% endblock %}
+
+<!-- body content -->
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row bg-body-tertiary">
+
+        <!-- side navbar -->
+
+        {% block sidenavbar %}
+
+        {% include 'Admin_Login_App/Side_Navbar.html' %}
+
+        {% endblock %}
+
+        <!-- navbar -->
+        <div class="col-10 pb-5" style="background-color: #f6f6f6;">
+            <div class="row">
+
+                {% block navbar %}
+
+                <div id="navbar-content">
+
+                    {% include 'Admin_Login_App/navbar.html' %}
+
+                </div>
+
+                {% endblock %}
+
+
+                {% block course_list %}
+
+                <div id="course-content">
+                    <!-- This is where the course content will be displayed -->
+
+                    {% include 'Admin_Login_App/course_list.html' %}
+
+                </div>
+                {% endblock %}
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    token = '4abb15cfe8d092fad5a680af9a70a9657be28e16'
+
+    function checkFileSize(input) {
+        if (input.files && input.files[0]) {
+            var fileSize = input.files[0].size; // Size in bytes
+            var maxSize = 250 * 1024; // 1MB in bytes
+
+
+            if (fileSize > maxSize) {
+                alert("File size exceeds the maximum limit of 250KB. Please select a smaller file.");
+                input.value = ''; // Clear the file input to prevent submission
+            }
+            else {
+                // Display the selected image
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    console.log(e)
+                    document.getElementById('images').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    }
+    // v1
+    // Function to check all checkboxes
+    function checkAll() {
+        var checkboxes = document.querySelectorAll('.check');
+        var checkallCheckbox = document.getElementById('checkall');
+
+        checkboxes.forEach(function (checkbox) {
+            checkbox.checked = checkallCheckbox.checked;
+        });
+    }
+
+    function loadCoursePage() {
+        loadNavbarPage()
+        // Specify the URL from which to fetch the new content
+        const url = "{% url 'course_page' %}";
+
+        // Fetch content from the URL using the provided URL
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Replace the HTML content of a specific div with the fetched data
+                document.getElementById('course-content').innerHTML = html;
+            })
+            .catch(error => console.error('Fetch error:', error));
+    }
+
+    function loadNavbarPage() {
+        // Specify the URL from which to fetch the new content
+        const url = "{% url 'navbar_save_course' %}";
+
+        // Fetch content from the URL using the provided URL
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Replace the HTML content of a specific div with the fetched data
+                document.getElementById('navbar-content').innerHTML = html;
+            })
+            .catch(error => console.error('Fetch error:', error));
+    }
+
+    // tabs
+    function OpenCourse(evt, courseId) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; }
+        tablinks = document.getElementsByClassName("nav-link"); for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(courseId).style.display = "block"; evt.currentTarget.className += " active";
+        CKEDITOR.replace('id_Description');
+    }
+
+    function updateCoursePage(url) {
+        loadNavbarPage() // Fetch content from the URL using the provided URL fetch(url)
+        console.log(url)
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Replace the HTML content of a specific div with the fetched data
+                document.getElementById('course-content').innerHTML = html;
+                CKEDITOR.replace('id_Description');
+            })
+            .catch(error => console.error('Fetch error:', error));
+    }
+
+
+    // Insert course api
+
+    async function InsertCourses() {
+        try {
+            // Get form data
+            const title = document.getElementById('id_Title').value;
+            console.log(title)
+            const description = CKEDITOR.instances.id_Description.getData();
+            console.log(description)
+            // const technologies = document.getElementById('id_Technologies');
+            const technologyInputs = document.getElementsByName('Technologies');
+            let technologies = [];
+            for (let i = 0; i < technologyInputs.length; i++) {
+                console.log(technologyInputs.length)
+                technologies.push(technologyInputs[i].value);
+            }
+            console.log(technologies)
+            const images = document.getElementById('id_Images').files[0];
+            console.log(images)
+            const status = document.getElementById('id_status').checked;
+            console.log(status)
+
+            // Construct form data
+            const formData = new FormData();
+            formData.append('Title', title);
+            formData.append('Description', description);
+            formData.append('Technologies', technologies.join(','));
+            formData.append('Images', images);
+            formData.append('status', status);
+
+            const response = await fetch(`course_api`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Token ${token}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            console.log('Success:', data);
+            alert('Course created successfully!');
+            window.location.href = `courses`;
+
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+        }
+    }
+
+    async function UpdateCourses(courseId) {
+        console.log(courseId);
+        try {
+            // Get form data
+            const titleElement = document.getElementById('id_Title');
+            const title = titleElement ? titleElement.value : null;
+
+            const description = CKEDITOR.instances.id_Description ? CKEDITOR.instances.id_Description.getData() : null;
+
+            const technologyInputs = document.getElementsByName('Technologies');
+            let technologies = [];
+            for (let i = 0; i < technologyInputs.length; i++) {
+                technologies.push(technologyInputs[i].value);
+            }
+
+            const imagesElement = document.getElementById('id_Images');
+            const images = imagesElement && imagesElement.files.length > 0 ? imagesElement.files[0] : null;
+
+            const statusElement = document.getElementById('id_status');
+            const status = statusElement ? statusElement.checked : false;
+
+            if (title === null || description === null || technologies.length === 0) {
+                throw new Error('Required form elements are missing');
+            }
+
+            // Construct form data
+            const formData = new FormData();
+            formData.append('Title', title);
+            formData.append('Description', description);
+            formData.append('Technologies', technologies.join(','));
+            if (images) {
+                formData.append('Images', images);
+            }
+            formData.append('Status', status);
+
+            const response = await fetch(`http://127.0.0.1:8000/course_api/${courseId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Token ${token}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Error details:', errorData);
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            console.log('Success:', data);
+            alert('Course updated successfully!');
+            window.location.href = `courses`;
+
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+        }
+    }
+
+
+
+    async function deleteCourse() {
+        let marked = document.querySelectorAll('input[type="checkbox"]:checked');
+        let ids = Array.from(marked).map(checkbox => checkbox.value);
+
+        console.log(ids);
+
+        if (ids.length === 0) {
+            alert('No courses selected for deletion.');
+            return;
+        }
+
+        try {
+            let failedDeletions = [];
+
+            for (let i = 0; i < ids.length; i++) {
+                let id = ids[i]; if (id === 'on') { ids.splice(i, 1); i--; continue; }
+
+                console.log(id)
+
+                const response = await fetch(`course_api/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) { failedDeletions.push(id); }
+            }
+            if (failedDeletions.length > 0) {
+                console.error('Failed to delete courses with IDs:', failedDeletions);
+                alert(`Failed to delete courses with IDs: ${failedDeletions.join(', ')}`);
+            } else {
+                alert('Courses deleted successfully!');
+            }
+
+            window.location.href = 'courses';
+
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+        }
+    }
+
+    // dynamically add and remove field for topics field
+
+    let techCounter = 1;
+
+    function addTechnologyField() {
+        var container = document.getElementById("technologiesContainer");
+
+        var input = document.createElement("input");
+        input.type = "text";
+        input.name = "Technologies";
+        input.className = "form-control mt-2";
+        input.id = "id_Technologies_" + techCounter;
+        techCounter++;
+        container.appendChild(input);
+
+        var removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className = "btn btn-sm btn-danger ml-2";
+        removeButton.textContent = "-";
+        removeButton.onclick = function () {
+            container.removeChild(input);
+            container.removeChild(removeButton);
+        };
+        container.appendChild(removeButton);
+    }
+
+    function getTechnologiesValues() {
+        var container = document.getElementById("technologiesContainer");
+        var inputs = container.getElementsByTagName("input");
+        var values = [];
+        for (var i = 0; i < inputs.length; i++) {
+            values.push(inputs[i].value);
+        }
+        console.log(values); // Output the values to the console
+        // You can now use `values` array as needed
+    }
+
+
+</script>
+{% endblock %}

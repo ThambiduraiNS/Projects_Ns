@@ -1,0 +1,40 @@
+{% extends 'Admin_Login_App/base.html' %}
+{% load static %}
+{% load bootstrap_icons %}
+
+{% block title %} Dashboard {% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+{% endblock %}
+
+<!-- header -->
+{% block header %}
+    {% include 'Admin_Login_App/Admin_Header.html' %}
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row bg-body-tertiary">
+
+        <!-- navbar -->
+
+        {% block sidenavbar %}
+
+        {% include 'Admin_Login_App/Side_Navbar.html' %}
+
+        {% endblock %}
+
+        <!-- dashboard -->
+
+        {% block dashboard %}
+
+        {% include 'Admin_Login_App/dashboard.html' %}
+        
+        {% endblock %}
+    </div>
+</div>
+
+{% endblock %}

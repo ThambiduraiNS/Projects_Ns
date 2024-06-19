@@ -1,0 +1,155 @@
+{% extends 'Admin_Login_App/base.html' %}
+{% load static %}
+{% load bootstrap_icons %}
+
+<!-- title -->
+{% block title %} Courses {% endblock %}
+
+<!-- Link css -->
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/Admin_Header.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/side_navbar.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+<link rel="stylesheet" href="{% static 'css/course_page.css' %}">
+<link rel="stylesheet" href="{% static 'css/course_list.css' %}">
+{% endblock %}
+
+<!-- link js -->
+{% block link_js %}
+
+{% endblock %}
+
+<!-- header -->
+{% block header %}
+{% include 'Admin_Login_App/Admin_Header.html' %}
+{% endblock %}
+
+<!-- body content -->
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row bg-body-tertiary">
+
+        <!-- side navbar -->
+
+        {% block sidenavbar %}
+
+        {% include 'Admin_Login_App/Side_Navbar.html' %}
+
+        {% endblock %}
+
+        <!-- navbar -->
+        <div class="col-10 pb-5" style="background-color: #f6f6f6;">
+            <div class="row">
+
+                {% block reports_navbar %}
+
+                <div id="navbar-content">
+
+                    {% include 'Admin_Login_App/reports_navbar.html' %}
+
+                </div>
+
+                {% endblock %}
+
+                
+                {% block report_type %}
+                
+                <div class="mb-4 mt-2">
+                    
+                    {% include 'Admin_Login_App/report_type.html' %}
+                
+                </div>
+
+                {% endblock %}
+                
+
+                {% block report %}
+
+                <div id="course-content">
+                    <!-- This is where the course content will be displayed -->
+
+                    {% include 'Admin_Login_App/course_report.html' %}
+
+                </div>
+                {% endblock %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // v1
+    // Function to check all checkboxes
+    function checkAll() {
+        var checkboxes = document.querySelectorAll('.check');
+        var checkallCheckbox = document.getElementById('checkall');
+
+        checkboxes.forEach(function (checkbox) {
+            checkbox.checked = checkallCheckbox.checked;
+        });
+    }
+
+    function loadCoursePage() {
+        loadNavbarPage()
+        // Specify the URL from which to fetch the new content
+        const url = "{% url 'course_page' %}";
+
+        // Fetch content from the URL using the provided URL
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Replace the HTML content of a specific div with the fetched data
+                document.getElementById('course-content').innerHTML = html;
+            })
+            .catch(error => console.error('Fetch error:', error));
+    }
+
+    function loadNavbarPage() {
+        // Specify the URL from which to fetch the new content
+        const url = "{% url 'navbar_save_course' %}";
+
+        // Fetch content from the URL using the provided URL
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Replace the HTML content of a specific div with the fetched data
+                document.getElementById('navbar-content').innerHTML = html;
+            })
+            .catch(error => console.error('Fetch error:', error));
+    }
+
+    function updateCoursePage(url) {
+        loadNavbarPage()
+        print(url)
+        // Fetch content from the URL using the provided URL
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Replace the HTML content of a specific div with the fetched data
+                document.getElementById('course-content').innerHTML = html;
+            })
+            .catch(error => console.error('Fetch error:', error));
+    }
+</script>
+{% endblock %}

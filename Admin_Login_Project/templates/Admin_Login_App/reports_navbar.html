@@ -1,0 +1,32 @@
+{% load static %}
+{% load bootstrap_icons %}
+
+{% block reports_navbar %}
+
+    <div class="col-12" id="navbar-content">
+        <div class="row py-3">
+            <div class="col-10">
+                <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                    <div class="container-fluid">
+                        <a class="navbar-brand Dashboard" href="#">
+                            <h1>Reports</h1>
+                        </a>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse " id="navbarSupportedContent">
+                            <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+                                <ol class="breadcrumb navbar-div">
+                                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                                    <li class="breadcrumb-item active text-info" aria-current="page"><a href="#">Reports</a></li>
+                                </ol>
+                            </nav>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </div>
+{% endblock %}

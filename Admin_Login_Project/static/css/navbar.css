@@ -1,0 +1,30 @@
+.plus {
+    font-weight: 900;
+    font-size: 20px;
+}
+
+#plus {
+    margin-right: 20px;
+    margin-top: 15px;
+    color: #fff;
+    background-color: #1e91cf;
+    border-color: #197bb0;
+    width: 40px;
+    height: 40px;
+}
+
+.bi-trash {
+    height: 13px;
+    width: 14px;
+    margin-bottom: 5px;
+}
+
+#trash {
+    margin-top: 15px;
+    background-color: #e3503e;
+    border: #dd3520;
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    margin-right: 26px;
+}

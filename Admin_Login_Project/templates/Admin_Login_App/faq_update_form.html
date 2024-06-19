@@ -1,0 +1,40 @@
+{% load static %}
+{% load bootstrap_icons %}
+
+{% block partners_list %}
+<div class="container" id="specific-div">
+
+    <div class="row">
+        <div class="col-12 mx-auto">
+            <div class="panel panel-default border">
+                <div class="panel-heading ps-3">
+                    <h3 class="panel-title border-bottom pb-2"> {% bs_icon 'pencil' %} <span class="Add_Course">Edit
+                            Courses</span></h3>
+                </div>
+                <div class="panel-body bg-white px-3 py-3">
+                    <form method="POST" action="{% url 'faq_form_update' data.id %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <label for="title">Question</label>
+                            <div>
+                                <input type="text" name="question" id="title" value="{{ data.question }}" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="title">Answer</label>
+                            <div>
+                                <input type="text" name="answer" id="title" value="{{ data.answer }}" class="form-control">
+                            </div>
+                        </div>
+                    
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

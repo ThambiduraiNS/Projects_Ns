@@ -1,0 +1,126 @@
+{% load static %}
+{% load bootstrap_icons %}
+
+{% block course_list %}
+<div class="container" id="course-content">
+
+    <div class="row">
+        <div class="col-12 mx-auto">
+            <div class="panel panel-default border">
+                <div class="panel-heading ps-3">
+                    <h3 class="panel-title border-bottom pb-2"> {% bs_icon 'list-task' %} <span
+                            class="Add_Course">Courses List</span></h3>
+                </div>
+                <div class="panel-body bg-white px-3 py-3">
+
+                    <table class="table table-bordered" id="course-table">
+
+                    </table>
+                    <a id="pdf" href="/pdf"><input type="submit" value="Download PDF"></a>
+                    <div class="pagination">
+                        <span class="step-links">
+                            {% if page_obj.has_previous %}
+                            <a href="?page=1">&laquo; first</a>
+                            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                            {% endif %}
+
+                            <span class="current">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                            </span>
+
+                            {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}">next</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    async function fetchCourses() {
+        try {
+            const response = await fetch('course_api',
+                {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Token 4abb15cfe8d092fad5a680af9a70a9657be28e16',
+                    }
+                });
+
+            const data = await response.json();
+            const table = document.getElementById('course-table');
+
+            // Clear the table first
+            table.innerHTML = '';
+
+            // Create table header
+            const header = table.createTHead();
+            const headerRow = header.insertRow(0);
+            const headers = ['S.NO', 'Course Name', 'Topics', 'Images', 'status', 'Action'];
+
+            const selectAllCell = headerRow.insertCell(0);
+            const selectAllCheckbox = document.createElement('input');
+            selectAllCheckbox.type = 'checkbox';
+            selectAllCheckbox.addEventListener('change', (event) => {
+                const isChecked = event.target.checked;
+                const checkboxes = document.querySelectorAll('.rowCheckbox');
+                checkboxes.forEach(checkbox => checkbox.checked = isChecked);
+            });
+            selectAllCell.appendChild(selectAllCheckbox);
+
+            headers.forEach((headerText, index) => {
+                const cell = headerRow.insertCell(index + 1); // +1 to account for "Select All" checkbox
+                cell.outerHTML = `<th>${headerText}</th>`;
+            });
+
+            // Create table body
+            const body = table.createTBody();
+
+            data.forEach((course, rowIndex) => {
+                const row = body.insertRow(rowIndex);
+                // Insert checkbox cell
+                const checkboxCell = row.insertCell(0);
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = course.id;
+                checkbox.className="pl"
+                checkbox.classList.add('rowCheckbox');
+                checkboxCell.appendChild(checkbox);
+
+
+                const image = document.createElement('img')
+                image.src = course.Images
+                image.height = "50";
+                image.width = "50";
+
+                row.insertCell(1).textContent = course.id;
+                row.insertCell(2).textContent = course.Title;
+                row.insertCell(3).textContent = course.Technologies;
+                row.insertCell(4).appendChild(image);
+                row.insertCell(5).textContent = course.status;
+                const updateButtonCell = row.insertCell(6); // Added Actions cell
+                const updateButton = document.createElement('button');
+                updateButton.textContent = 'Update'; // Button text
+
+                updateButton.addEventListener('click', () => {
+                    updateCoursePage(`update_course/${course.id}`);
+                });
+
+                updateButtonCell.appendChild(updateButton);
+            });
+        } catch (error) {
+            console.error('Error fetching courses:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        fetchCourses();
+    });
+</script>
+
+{% endblock %}
