@@ -102,13 +102,16 @@
                 password: password
             };
 
-            var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+            // const jwtToken = localStorage.getItem('accessToken');
 
-            fetch("{% url 'admin_login_api' %}", {
+            // console.log(jwtToken)
+
+            fetch("/api/admin_login/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRFToken": csrfToken
+                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    // "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE4ODkzNzI3LCJpYXQiOjE3MTg4OTAxMjcsImp0aSI6ImFlMDQ5MzMyYjUxMjQ5YjI4YzI1YjgxMmNiM2Y3MmUyIiwidXNlcl9pZCI6MX0.7vJBpo6tMYmdtk24qY62GcJMpVh2dv4WcA8_hlxFzVE` 
                 },
                 body: JSON.stringify(data)
             })
@@ -121,15 +124,15 @@
                 return response.json();
             })
             .then(data => {
-                if (data.access) {
-                    localStorage.setItem('access', data.access);
-                    localStorage.setItem('refresh', data.refresh);
+                if (data) {
+                    // localStorage.setItem('access', data.access);
+                    // localStorage.setItem('refresh', data.refresh);
                     
                     // Fetch admin usernames
                     fetch("{% url 'get_admin_usernames' %}", {
                         method: 'GET',
                         headers: {
-                            'Authorization': `Bearer ${data.access}`,
+                            // 'Authorization': `Bearer ${data.access}`,
                             'Content-Type': 'application/json'
                         }
                     })

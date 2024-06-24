@@ -1,10 +1,5 @@
 /* updated style */
 
-@font-face {
-    font-family: 'Poppins';
-    src: url('');
-}
-
 * {
     font-family: 'Open Sans', sans-serif;
     box-sizing: border-box;
@@ -18,7 +13,7 @@
     background-color: #fcddec;
 }
 .img-div {
-    width: -webkit-fill-available;
+    width: inherit;
     top: 260px;
     left: 0;
 }
@@ -111,7 +106,7 @@ p {
 }
 
 .login-btn {
-    width: -webkit-fill-available;
+    width: 100%;
     margin-top: 4%;
     margin-bottom: 10%;
     background-color: #8d0f4c !important;

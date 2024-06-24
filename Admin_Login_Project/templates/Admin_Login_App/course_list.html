@@ -44,11 +44,14 @@
 <script>
     async function fetchCourses() {
         try {
-            const response = await fetch('course_api',
+
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+
+            const response = await fetch('/api/courses/',
                 {
                     method: 'GET',
                     headers: {
-                        'Authorization': 'Token 4abb15cfe8d092fad5a680af9a70a9657be28e16',
+                        'Authorization': `Bearer ${token}`,
                     }
                 });
 
@@ -78,6 +81,8 @@
                 cell.outerHTML = `<th>${headerText}</th>`;
             });
 
+            // const reversedData = data.reverse();
+
             // Create table body
             const body = table.createTBody();
 
@@ -88,27 +93,31 @@
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.value = course.id;
-                checkbox.className="pl"
+                checkbox.className = "pl"
                 checkbox.classList.add('rowCheckbox');
                 checkboxCell.appendChild(checkbox);
 
-
                 const image = document.createElement('img')
+                console.log(image)
                 image.src = course.Images
+                image.alt = 'course img'
                 image.height = "50";
                 image.width = "50";
+                image.onerror = function() {
+                    this.src = "{% static '/images/logo.png' %}";
+                };
 
                 row.insertCell(1).textContent = course.id;
                 row.insertCell(2).textContent = course.Title;
                 row.insertCell(3).textContent = course.Technologies;
                 row.insertCell(4).appendChild(image);
                 row.insertCell(5).textContent = course.status;
-                const updateButtonCell = row.insertCell(6); // Added Actions cell
+                const updateButtonCell = row.insertCell(6);
                 const updateButton = document.createElement('button');
-                updateButton.textContent = 'Update'; // Button text
+                updateButton.textContent = 'Update';
 
                 updateButton.addEventListener('click', () => {
-                    updateCoursePage(`update_course/${course.id}`);
+                    updateCoursePage(`/update_course/${course.id}`);
                 });
 
                 updateButtonCell.appendChild(updateButton);

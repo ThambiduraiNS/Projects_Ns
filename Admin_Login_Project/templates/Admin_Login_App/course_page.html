@@ -8,35 +8,28 @@
         <div class="col-12 mx-auto">
             <div class="panel panel-default border">
                 <div class="panel-heading ps-3">
-                    <h3 class="panel-title border-bottom pb-2"> {% bs_icon 'pencil' %} <span class="Add_Course">Edit
-                            Courses</span></h3>
+                    <h3 class="panel-title border-bottom pb-2"> {% bs_icon 'pencil' %} <span class="Add_Course">Edit Courses</span></h3>
                 </div>
-
 
                 <!-- tabs display -->
                 <ul class="nav nav-tabs">
                     <li class="nav-item">
-                        <button class="nav-link text-secondary active" onclick="OpenCourse(event, 'Add_Course')"
-                            aria-current="page" href="#">Add Course</button>
+                        <button class="nav-link text-secondary active" onclick="OpenCourse(event, 'Add_Course')" aria-current="page" id="defaultOpen">Add Course</button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link text-secondary" onclick="OpenCourse(event, 'tech_stack')"
-                            href="#">Technology Stack</button>
+                        <button class="nav-link text-secondary" onclick="OpenCourse(event, 'tech_stack')">Technology Stack</button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link text-secondary" onclick="OpenCourse(event, 'course_curriculum')"
-                            href="#">Course Curriculum</button>
+                        <button class="nav-link text-secondary" onclick="OpenCourse(event, 'course_curriculum')">Course Curriculum</button>
                     </li>
                     <li class="nav-item">
-                        <button class="nav-link text-secondary" onclick="OpenCourse(event, 'course_fees')"
-                            href="#">Course Fees</button>
+                        <button class="nav-link text-secondary" onclick="OpenCourse(event, 'course_fees')">Course Fees</button>
                     </li>
                 </ul>
                 <!-- tabs display end -->
 
                 <!-- Add Course -->
-
-                <div class="panel-body bg-white px-3 py-3 tabcontent" id="Add_Course">
+                <div class="panel-body bg-white px-3 py-3 tabcontent" id="Add_Course" style="display: block;">
                     <form id="courseForm" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="form-group">
@@ -51,128 +44,108 @@
                             {{ form.Description }}
                         </div>
 
-                        <!-- <div class="form-group">
-                            <label for="id_Technologies">Topics</label>
-                            <input type="text" name="Technologies" id="id_Technologies" class="form-control">
-                        </div> -->
-
-                        <div class="form-group">
+                        <div class="form-group relative">
                             <label for="id_Technologies">Topics</label>
                             <div id="technologiesContainer">
-                                <input type="text" name="Technologies" id="id_Technologies" class="form-control">
+                                <input type="text" name="Technologies" id="id_Technologies" class="form-control input-field">
                             </div>
-                            <button type="button" onclick="addTechnologyField()"
-                                class="btn btn-sm btn-success mt-2">+</button>
+                            <button type="button" onclick="addTechnologyField()" class="btn btn-sm btn-success mt-2 absolute btn-div">+</button>
                         </div>
-                        <button type="button" onclick="getTechnologiesValues()" class="btn btn-sm btn-primary mt-2">Get
-                            Values</button>
 
                         <div class="form-group">
                             <label for="id_Images">Banner Images</label>
-                            <input type="file" name="images" onchange="checkFileSize(this)" accept="image/*"
-                                id="id_Images">
+                            <input type="file" name="images" onchange="checkFileSize(this)" accept="image/*" id="id_Images">
                         </div>
 
                         <div class="form-group">
                             <label for="status">Status</label>
-                            {{form.status}}
+                            {{ form.status }}
                         </div>
-                        <button type="button" onclick="InsertCourses()" class="btn btn-primary">Submit</button>
+                        <!-- <button type="button" onclick="InsertCourses()" class="btn btn-primary">Submit</button> -->
+                        <!-- <button type="button" onclick="nextButtonClick()" class="btn btn-primary">Next</button> -->
                     </form>
                 </div>
-
                 <!-- Add course end -->
 
                 <!-- Technology Stack start -->
-
-                <div class="panel-body bg-white px-3 py-3 tabcontent" id="tech_stack">
+                <div class="panel-body bg-white px-3 py-3 tabcontent" id="tech_stack" style="display: none;">
                     <form id="courseForm" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="form-group">
-                            <label for="id_description">Description</label>
-                            <textarea id="id_description" name="Description" class="form-control"></textarea>
+                            <label for="id_description_tech_stack">Description</label>
+                            <textarea id="id_description_tech_stack" name="Description" class="form-control"></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label for="images">Images</label>
-                            <input type="file" name="images" id="images" accept="images/*" class="form-control-file"
-                                onchange="checkFileSize(this)">
+                            <label for="images_tech_stack">Images</label>
+                            <input type="file" name="images" id="images_tech_stack" accept="images/*" class="form-control-file" onchange="checkFileSize(this)">
                         </div>
 
-                        <button type="button" class="btn btn-primary">Submit</button>
+                        <!-- <button type="button" class="btn btn-primary">Submit</button> -->
                     </form>
                 </div>
-
                 <!-- Technology Stack end -->
 
                 <!-- Add course_curriculum -->
-
-                <div class="panel-body bg-white px-3 py-3 tabcontent" id="course_curriculum">
+                <div class="panel-body bg-white px-3 py-3 tabcontent" id="course_curriculum" style="display: none;">
                     <form id="courseForm" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="form-group">
-                            <label for="title">Course Curriculum</label>
+                            <label for="title_curriculum">Course Curriculum</label>
                             <div>
-                                <input type="text" name="Title" id="title" class="form-control">
+                                <input type="text" name="Title" id="title_curriculum" class="form-control">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="technologies">Weeks</label>
-                            <input type="text" name="Technologies" id="technologies" class="form-control"
-                                autocomplete="off">
+                            <label for="technologies_curriculum">Weeks</label>
+                            <input type="text" name="Technologies" id="technologies_curriculum" class="form-control" autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label for="id_description">Description</label>
-                            <textarea id="id_description" name="Description" class="form-control"></textarea>
+                            <label for="id_description_curriculum">Description</label>
+                            <textarea id="id_description_curriculum" name="Description" class="form-control"></textarea>
                         </div>
 
-                        <button type="button" class="btn btn-primary">Submit</button>
+                        <!-- <button type="button" class="btn btn-primary">Submit</button> -->
                     </form>
                 </div>
-
                 <!-- Add course_curriculum end -->
 
                 <!-- Add course_fees -->
-
-                <div class="panel-body bg-white px-3 py-3 tabcontent" id="course_fees">
+                <div class="panel-body bg-white px-3 py-3 tabcontent" id="course_fees" style="display: none;">
                     <form id="courseForm" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="form-group">
-                            <label for="title">Course fees</label>
+                            <label for="title_fees">Course Fees</label>
                             <div>
-                                <input type="text" name="Title" id="title" class="form-control">
+                                <input type="text" name="Title" id="title_fees" class="form-control">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="id_description">Description</label>
-                            <textarea id="id_description" name="Description" class="form-control"></textarea>
+                            <label for="id_description_fees">Description</label>
+                            <textarea id="id_description_fees" name="Description" class="form-control"></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="technologies">Level Type</label>
-                            <input type="text" name="Technologies" id="technologies" class="form-control"
-                                autocomplete="off">
+                            <label for="technologies_fees">Level Type</label>
+                            <input type="text" name="Technologies" id="technologies_fees" class="form-control" autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label for="technologies">Duration</label>
-                            <input type="text" name="Technologies" id="technologies" class="form-control"
-                                autocomplete="off">
+                            <label for="duration_fees">Duration</label>
+                            <input type="text" name="Technologies" id="duration_fees" class="form-control" autocomplete="off">
                         </div>
 
                         <div class="form-group">
-                            <label for="id_description">Level Type Description</label>
-                            <textarea id="id_description" name="Description" class="form-control"></textarea>
+                            <label for="level_description_fees">Level Type Description</label>
+                            <textarea id="level_description_fees" name="Description" class="form-control"></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label for="images">Logo</label>
-                            <input type="file" name="images" id="images" accept="images/*" class="form-control-file"
-                                onchange="checkFileSize(this)">
+                            <label for="images_fees">Logo</label>
+                            <input type="file" name="images" id="images_fees" accept="images/*" class="form-control-file" onchange="checkFileSize(this)">
                         </div>
 
-                        <button type="button" class="btn btn-primary">Submit</button>
+                        <!-- <button type="button" onclick="InsertCourses()" class="btn btn-primary">Submit</button> -->
                     </form>
                 </div>
-
                 <!-- Add course_fees end -->
             </div>
         </div>

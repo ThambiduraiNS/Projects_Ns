@@ -7,6 +7,11 @@
     font-weight: 400;
 }
 
+.input-field {
+    width: 96% !important;
+    margin-bottom: 20px;
+}
+
 .form-control:focus {
     color: #212529;
     background-color: #fff !important;
@@ -20,4 +25,30 @@
     padding: 6px 12px;
     border: 1px solid #ccc;
     border-top: none;
+}
+
+.relative {
+    position: relative;
+}
+
+.absolute {
+    position: absolute;
+}
+
+.btn-div {
+    right: 0px;
+    top: 18px;
+}
+
+.cancel-btn {
+
+    right: -10px;
+    top: -26px;
+    margin-top: 3%;
+    width: 3%;
+
+}
+
+.input-div {
+    width: 99% !important;
 }

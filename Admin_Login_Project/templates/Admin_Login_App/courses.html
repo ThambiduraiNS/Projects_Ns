@@ -77,8 +77,6 @@
 {% block scripts %}
 <script>
 
-    token = '4abb15cfe8d092fad5a680af9a70a9657be28e16'
-
     function checkFileSize(input) {
         if (input.files && input.files[0]) {
             var fileSize = input.files[0].size; // Size in bytes
@@ -151,16 +149,77 @@
     }
 
     // tabs
+    // function OpenCourse(evt, courseId) {
+    //     var i, tabcontent, tablinks;
+    //     tabcontent = document.getElementsByClassName("tabcontent");
+    //     for (i = 0; i < tabcontent.length; i++) {
+    //         tabcontent[i].style.display = "none";
+    //     }
+    //     tablinks = document.getElementsByClassName("nav-link");
+    //     for (i = 0; i < tablinks.length; i++) {
+    //         tablinks[i].className = tablinks[i].className.replace(" active", "");
+    //     }
+    //     document.getElementById(courseId).style.display = "block";
+    //     evt.currentTarget.className += " active";
+
+    //     // Initialize CKEditor for all description fields
+    //     var descriptionFields = document.querySelectorAll('textarea');
+    //     descriptionFields.forEach(field => {
+    //         if (!field.classList.contains('ckeditor-applied')) {
+    //             CKEDITOR.replace(field.id);
+    //             field.classList.add('ckeditor-applied');
+    //         }
+    //     });
+    // }
+
+    // // Initialize the first tab and CKEditor on page load
+    // document.addEventListener('DOMContentLoaded', function () {
+    //     initializeCKEditor('Add_Course');
+    //     document.getElementById('defaultOpen').click();
+    // });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize CKEditor for the default active tab on page load
+        initializeCKEditor('Add_Course');
+
+        // Set the default tab as active and display its content
+        document.getElementById('defaultOpen');
+    });
+
+    // Function to initialize CKEditor for a specific tab
+    function initializeCKEditor(tabId) {
+        // Get all textarea elements within the specified tab
+        var textareas = document.querySelectorAll(`#${tabId} textarea`);
+        textareas.forEach(textarea => {
+            var editor = CKEDITOR.replace(textarea.id);
+            editor.on('instanceReady', function () {
+                textarea.style.display = 'none'; // Hide original textarea after CKEditor is initialized
+            });
+        });
+    }
+
+    // Function to switch tabs and initialize CKEditor for the newly active tab
     function OpenCourse(evt, courseId) {
         var i, tabcontent, tablinks;
+
+        // Hide all tab contents and deactivate all tab links
         tabcontent = document.getElementsByClassName("tabcontent");
-        for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; }
-        tablinks = document.getElementsByClassName("nav-link"); for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
         }
-        document.getElementById(courseId).style.display = "block"; evt.currentTarget.className += " active";
-        CKEDITOR.replace('id_Description');
+        tablinks = document.getElementsByClassName("nav-link");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+
+        // Display the content of the selected tab and activate its link
+        document.getElementById(courseId).style.display = "block";
+        evt.currentTarget.classList.add("active");
+
+        // Initialize CKEditor for the newly displayed tab
+        initializeCKEditor(courseId);
     }
+
 
     function updateCoursePage(url) {
         loadNavbarPage() // Fetch content from the URL using the provided URL fetch(url)
@@ -191,13 +250,18 @@
             const description = CKEDITOR.instances.id_Description.getData();
             console.log(description)
             // const technologies = document.getElementById('id_Technologies');
+
+
             const technologyInputs = document.getElementsByName('Technologies');
+            console.log(technologyInputs)
             let technologies = [];
             for (let i = 0; i < technologyInputs.length; i++) {
                 console.log(technologyInputs.length)
                 technologies.push(technologyInputs[i].value);
             }
             console.log(technologies)
+
+
             const images = document.getElementById('id_Images').files[0];
             console.log(images)
             const status = document.getElementById('id_status').checked;
@@ -211,10 +275,15 @@
             formData.append('Images', images);
             formData.append('status', status);
 
-            const response = await fetch(`course_api`, {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+            const response = await fetch(`/api/courses/`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Token ${token}`
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken,
+                    // 'Authorization': `Token ${token}`
+                    "Authorization": `Bearer ${token}`
                 },
                 body: formData
             });
@@ -233,6 +302,56 @@
         }
     }
 
+    async function InsertCourses() {
+        try {
+            // Get form data
+            const title = document.getElementById('id_Title').value;
+            const description = CKEDITOR.instances.id_Description.getData();
+            const technologyInputs = document.getElementsByName('Technologies');
+            let technologies = [];
+            for (let i = 0; i < technologyInputs.length; i++) {
+                technologies.push(technologyInputs[i].value);
+            }
+            const images = document.getElementById('id_Images').files[0];
+            const status = document.getElementById('id_status').checked;
+
+            // Construct form data
+            const formData = new FormData();
+            formData.append('Title', title);
+            formData.append('Description', description);
+            formData.append('Technologies', technologies.join(','));
+            formData.append('Images', images);
+            formData.append('status', status);
+
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+            const response = await fetch(`/api/courses/`, {
+                method: 'POST',
+                headers: {
+                    "X-CSRFToken": csrfToken,
+                    "Authorization": `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error status:', response.status);
+                console.error('Error text:', errorText);
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            console.log('Success:', data);
+            alert('Course created successfully!');
+            window.location.href = `/courses`;
+
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+        }
+    }
+
+
     async function UpdateCourses(courseId) {
         console.log(courseId);
         try {
@@ -240,13 +359,18 @@
             const titleElement = document.getElementById('id_Title');
             const title = titleElement ? titleElement.value : null;
 
+            console.log(titleElement)
+
             const description = CKEDITOR.instances.id_Description ? CKEDITOR.instances.id_Description.getData() : null;
 
             const technologyInputs = document.getElementsByName('Technologies');
+            console.log(technologyInputs)
             let technologies = [];
             for (let i = 0; i < technologyInputs.length; i++) {
+                console.log(technologyInputs.length)
                 technologies.push(technologyInputs[i].value);
             }
+            console.log(technologies)
 
             const imagesElement = document.getElementById('id_Images');
             const images = imagesElement && imagesElement.files.length > 0 ? imagesElement.files[0] : null;
@@ -268,10 +392,11 @@
             }
             formData.append('Status', status);
 
-            const response = await fetch(`http://127.0.0.1:8000/course_api/${courseId}`, {
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+            const response = await fetch(`/api/update_courses/${courseId}/`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Token ${token}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: formData
             });
@@ -285,7 +410,7 @@
             const data = await response.json();
             console.log('Success:', data);
             alert('Course updated successfully!');
-            window.location.href = `courses`;
+            window.location.href = `/courses`;
 
         } catch (error) {
             console.error('There was a problem with the fetch operation:', error);
@@ -312,11 +437,11 @@
                 let id = ids[i]; if (id === 'on') { ids.splice(i, 1); i--; continue; }
 
                 console.log(id)
-
-                const response = await fetch(`course_api/${id}`, {
+                const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+                const response = await fetch(`/api/delete_courses/${id}`, {
                     method: 'DELETE',
                     headers: {
-                        'Authorization': `Token ${token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
@@ -330,7 +455,7 @@
                 alert('Courses deleted successfully!');
             }
 
-            window.location.href = 'courses';
+            window.location.href = '/courses';
 
         } catch (error) {
             console.error('There was a problem with the fetch operation:', error);
@@ -339,28 +464,58 @@
 
     // dynamically add and remove field for topics field
 
+    // let techCounter = 1;
+
+    // function addTechnologyField() {
+    //     var container = document.getElementById("technologiesContainer");
+
+    //     var input = document.createElement("input");
+    //     input.type = "text";
+    //     input.name = "Technologies";
+    //     input.className = "form-control mt-2";
+    //     input.id = "id_Technologies_" + techCounter;
+    //     techCounter++;
+    //     container.appendChild(input);
+
+    //     var removeButton = document.createElement("button");
+    //     removeButton.type = "button";
+    //     removeButton.className = "btn btn-sm btn-danger ml-2 cancel-btn";
+    //     removeButton.style.position = 'absolute';
+    //     removeButton.textContent = "-";
+    //     removeButton.onclick = function () {
+    //         container.removeChild(input);
+    //         container.removeChild(removeButton);
+    //     };
+    //     container.appendChild(removeButton);
+    // }
+
     let techCounter = 1;
 
     function addTechnologyField() {
         var container = document.getElementById("technologiesContainer");
 
+        var div = document.createElement("div");
+        div.className = "input-group mt-2 relative input-div";
+        div.id = "techDiv_" + techCounter;
+
         var input = document.createElement("input");
         input.type = "text";
         input.name = "Technologies";
-        input.className = "form-control mt-2";
+        input.className = "form-control input-field";
         input.id = "id_Technologies_" + techCounter;
         techCounter++;
-        container.appendChild(input);
+        div.appendChild(input);
 
         var removeButton = document.createElement("button");
         removeButton.type = "button";
-        removeButton.className = "btn btn-sm btn-danger ml-2";
+        removeButton.className = "btn btn-sm btn-danger ml-2 cancel-btn";
         removeButton.textContent = "-";
         removeButton.onclick = function () {
-            container.removeChild(input);
-            container.removeChild(removeButton);
+            container.removeChild(div);
         };
-        container.appendChild(removeButton);
+        div.appendChild(removeButton);
+
+        container.appendChild(div);
     }
 
     function getTechnologiesValues() {
@@ -374,6 +529,17 @@
         // You can now use `values` array as needed
     }
 
+    let currentTabId = 'Add_Course';
+    function moveToNextTab(nextTabId) {
+        // Hide current tab
+        document.getElementById(currentTabId).style.display = 'none';
+
+        // Show next tab
+        document.getElementById(nextTabId).style.display = 'block';
+
+        // Update currentTabId for next iteration
+        currentTabId = nextTabId;
+    }
 
 </script>
 {% endblock %}

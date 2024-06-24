@@ -1,7 +1,6 @@
 import io
 import os
 import requests
-from datetime import datetime
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, logout
@@ -13,18 +12,21 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.authentication import JWTAuthentication
+# from rest_framework_simplejwt.authentication import JWTAuthentication
 from PIL import Image as PILImage
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
 from .forms import CoursesForm, UpdateCourseForm
 from .models import AdminLogin, Course, PartnerLogo, Testimonial, PlacementStory, FAQ, Blog, Career
-from .serializers import CourseSerializer
+from .serializers import CourseSerializer, UserSerializer
 
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+# from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+# from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 
+from rest_framework.exceptions import AuthenticationFailed
+import jwt, datetime
+from .authentication import JWTAuthentication
 # ----------------------------- Admin Views ----------------------------
 
 def admin_login_view(request):
@@ -45,42 +47,96 @@ def user_logout(request):
 
 # ---------------------------- Admin Login API ----------------------------
 
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        # Add custom claims
-        token['username'] = user.username
-        return token
-
-class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
-
-class MyTokenRefreshView(TokenRefreshView):
-    serializer_class = TokenRefreshSerializer
+# Create your views here.
+class RegisterView(APIView):
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 class AdminLoginAPI(APIView):
     
+    # def post(self, request):
+    #     username = request.data.get('username')
+    #     print(username)
+    #     password = request.data.get('password')
+    #     print(password)
+    #     user = authenticate(username=username, password=password)
+    #     if user:
+    #         refresh = RefreshToken.for_user(user)
+    #         return Response({
+    #             'access': str(refresh.access_token),
+    #             'refresh': str(refresh)
+    #         })
+    #     return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        user = authenticate(username=username, password=password)
-        if user:
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'access': str(refresh.access_token),
-                'refresh': str(refresh)
-            })
-        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        username = request.data['username']
+        password = request.data['password']
+
+        # user = AdminLogin.objects.filter(email=email).first()
+        user = AdminLogin.objects.filter(username = username).first()
+
+        if user is None:
+            raise AuthenticationFailed('User not found!')
+
+        if not user.check_password(password):
+            raise AuthenticationFailed('Incorrect password!')
+
+        payload = {
+            'id': user.id,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+            'iat': datetime.datetime.utcnow()
+        }
+    
+
+        token = jwt.encode(payload, 'secret', algorithm='HS256')
+    
+        # token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
+        # token = jwt.decode(jwt.encode(payload, 'secret', algorithm='HS256'), 'secret', algorithms=['HS256'])
+
+        response = Response()
+
+        response.set_cookie(key='jwt', value=token, httponly=True, max_age=24 * 60 * 60)
+        response.data = {
+            'jwt': token
+        }
+        return response
 
 # ---------------------------- Admin User Info API ----------------------------
 
 class get_admin_usernames(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
+
+    # def get(self, request):
+    #     admin_usernames = AdminLogin.objects.values_list('username', flat=True)
+    #     return Response(list(admin_usernames))
 
     def get(self, request):
-        admin_usernames = AdminLogin.objects.values_list('username', flat=True)
-        return Response(list(admin_usernames))
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+
+        try:
+            payload = jwt.decode(jwt=token, key='secret', algorithms=['HS256'])
+
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Unauthenticated!')
+
+        user = AdminLogin.objects.filter(id=payload['id']).first()
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+class LogoutView(APIView):
+    def post(self, request):
+        response = Response()
+        response.delete_cookie('jwt')
+        response.data = {
+            'message': 'success'
+        }
+        return response
 
 # ---------------------------- Course Views ---------------------------------
 
@@ -115,7 +171,7 @@ def delete_course(request, id):
 # ---------------------------- Course API -----------------------------------
 
 class CourseListCreateView(generics.ListCreateAPIView):
-    queryset = Course.objects.all()
+    queryset = Course.objects.all().order_by('-id')
     serializer_class = CourseSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -127,6 +183,24 @@ class CourseDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
 
+class CourseUpdateView(generics.RetrieveUpdateAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    partial = True
+    
+    
+class CourseDeleteView(generics.DestroyAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response(print("delete Movie"))
 # ----------------------------- PDF Generation ----------------------------
 
 def pdf(request):
