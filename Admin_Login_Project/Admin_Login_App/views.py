@@ -17,7 +17,7 @@ from PIL import Image as PILImage
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
-from .forms import CoursesForm, UpdateCourseForm
+from .forms import CoursesForm, UpdateCourseForm, viewCourseForm
 from .models import AdminLogin, Course, PartnerLogo, Testimonial, PlacementStory, FAQ, Blog, Career
 from .serializers import CourseSerializer, UserSerializer
 
@@ -159,10 +159,18 @@ def course_page_view(request):
 def navbar_save_view(request):
     return render(request, 'Admin_Login_App/navbar_save_course.html')
 
+def navbar_view_course(request):
+    return render(request, 'Admin_Login_App/navbar_view_course.html')
+
 def update_course(request, id):
     course = Course.objects.get(id=id)
     form = UpdateCourseForm(instance=course)
     return render(request, 'Admin_Login_App/course_update.html', {'form': form, 'datas': course})
+
+def view_course(request, id):
+    course = Course.objects.get(id=id)
+    form = viewCourseForm(instance=course)
+    return render(request, 'Admin_Login_App/view_course.html', {'form': form, 'datas': course})
 
 def delete_course(request, id):
     obj = Course.objects.get(id=id)

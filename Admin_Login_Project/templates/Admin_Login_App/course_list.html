@@ -64,7 +64,7 @@
             // Create table header
             const header = table.createTHead();
             const headerRow = header.insertRow(0);
-            const headers = ['S.NO', 'Course Name', 'Topics', 'Images', 'status', 'Action'];
+            const headers = ['S.NO', 'Course Name', 'Topics', 'Images', 'Enable/Disable', 'Action'];
 
             const selectAllCell = headerRow.insertCell(0);
             const selectAllCheckbox = document.createElement('input');
@@ -111,15 +111,38 @@
                 row.insertCell(2).textContent = course.Title;
                 row.insertCell(3).textContent = course.Technologies;
                 row.insertCell(4).appendChild(image);
-                row.insertCell(5).textContent = course.status;
+
+                // enable and disable
+                const statusCell = row.insertCell(5);
+                const switchLabel = document.createElement('label');
+                switchLabel.classList.add('switch');
+
+                const statusCheckbox = document.createElement('input');
+                statusCheckbox.type = 'checkbox';
+                statusCheckbox.checked = course.status === 'enabled';
+                statusCheckbox.addEventListener('change', () => toggleCourseStatus(course.id, statusCheckbox.checked ? 'enabled' : 'disabled'));
+
+                const slider = document.createElement('span');
+                slider.classList.add('slider');
+
+                switchLabel.appendChild(statusCheckbox);
+                switchLabel.appendChild(slider);
+                statusCell.appendChild(switchLabel);
+
+                // Action
                 const updateButtonCell = row.insertCell(6);
+                
                 const updateButton = document.createElement('button');
-                updateButton.textContent = 'Update';
+                updateButton.classList.add('edit-button');
+                updateButton.innerHTML = `{% bs_icon "pencil-fill" %}`;
+                updateButton.addEventListener('click', () => updateCoursePage(`/update_course/${course.id}`));
+                updateButtonCell.appendChild(updateButton);
 
-                updateButton.addEventListener('click', () => {
-                    updateCoursePage(`/update_course/${course.id}`);
-                });
-
+                const viewButton = document.createElement('button');
+                viewButton.classList.add('action-button');
+                viewButton.innerHTML = `{% bs_icon "eye-fill" %}`;
+                viewButton.addEventListener('click', () => viewCoursePage(`/view_course/${course.id}`));
+                updateButtonCell.appendChild(viewButton);
                 updateButtonCell.appendChild(updateButton);
             });
         } catch (error) {

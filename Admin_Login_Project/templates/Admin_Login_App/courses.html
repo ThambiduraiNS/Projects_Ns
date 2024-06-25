@@ -148,6 +148,24 @@
             .catch(error => console.error('Fetch error:', error));
     }
 
+    function loadNavbarViewPage() {
+        // Specify the URL from which to fetch the new content
+        const url = "{% url 'navbar_view_course' %}";
+
+        // Fetch content from the URL using the provided URL
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Replace the HTML content of a specific div with the fetched data
+                document.getElementById('navbar-content').innerHTML = html;
+            })
+            .catch(error => console.error('Fetch error:', error));
+    }
     // tabs
     // function OpenCourse(evt, courseId) {
     //     var i, tabcontent, tablinks;
@@ -181,9 +199,9 @@
     document.addEventListener('DOMContentLoaded', function () {
         // Initialize CKEditor for the default active tab on page load
         initializeCKEditor('Add_Course');
-
         // Set the default tab as active and display its content
         document.getElementById('defaultOpen');
+        CKEDITOR.replace('id_Description');
     });
 
     // Function to initialize CKEditor for a specific tab
@@ -192,6 +210,7 @@
         var textareas = document.querySelectorAll(`#${tabId} textarea`);
         textareas.forEach(textarea => {
             var editor = CKEDITOR.replace(textarea.id);
+            console.log(textarea.id)
             editor.on('instanceReady', function () {
                 textarea.style.display = 'none'; // Hide original textarea after CKEditor is initialized
             });
@@ -239,6 +258,23 @@
             .catch(error => console.error('Fetch error:', error));
     }
 
+    function viewCoursePage(url) {
+        loadNavbarViewPage() // Fetch content from the URL using the provided URL fetch(url)
+        console.log(url)
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Replace the HTML content of a specific div with the fetched data
+                document.getElementById('course-content').innerHTML = html;
+                CKEDITOR.replace('id_Description');
+            })
+            .catch(error => console.error('Fetch error:', error));
+    }
 
     // Insert course api
 
@@ -353,7 +389,7 @@
 
 
     async function UpdateCourses(courseId) {
-        console.log(courseId);
+        console.log(courseId)
         try {
             // Get form data
             const titleElement = document.getElementById('id_Title');
@@ -417,7 +453,73 @@
         }
     }
 
+    // view course
+    async function viewCourse(courseId) {
+        try {
+            // Get form data
+            const titleElement = document.getElementById('id_Title');
+            const title = titleElement ? titleElement.value : null;
 
+            console.log(titleElement);
+
+            const descriptionElement = document.getElementById('id_Description');
+            const description = descriptionElement ? descriptionElement.value : null; // Use .value instead of .textContent for textarea
+
+            console.log(descriptionElement);
+
+            const technologyInputs = document.getElementsByName('Technologies');
+            console.log(technologyInputs);
+            let technologies = [];
+            for (let i = 0; i < technologyInputs.length; i++) {
+                const tech = technologyInputs[i].value.trim();
+                if (tech) {
+                    technologies.push(tech);
+                }
+            }
+            console.log(technologies);
+
+            const imagesElement = document.getElementById('images');
+            const images = imagesElement ? imagesElement.src : null;
+
+            console.log(imagesElement);
+
+            if (title === null || description === null || technologies.length === 0) {
+                throw new Error('Required form elements are missing');
+            }
+
+            // Construct form data
+            const formData = new FormData();
+            formData.append('Title', title);
+            formData.append('Description', description);
+            formData.append('Technologies', JSON.stringify(technologies)); // Use JSON.stringify to pass array
+            if (images) {
+                formData.append('Images', images);
+            }
+
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+            const response = await fetch(`api/courses/${courseId}/`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Error details:', errorData);
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            console.log('Success:', data);
+            alert('Course updated successfully!');
+            window.location.href = `/courses`;
+
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+        }
+    }
 
     async function deleteCourse() {
         let marked = document.querySelectorAll('input[type="checkbox"]:checked');
@@ -464,31 +566,6 @@
 
     // dynamically add and remove field for topics field
 
-    // let techCounter = 1;
-
-    // function addTechnologyField() {
-    //     var container = document.getElementById("technologiesContainer");
-
-    //     var input = document.createElement("input");
-    //     input.type = "text";
-    //     input.name = "Technologies";
-    //     input.className = "form-control mt-2";
-    //     input.id = "id_Technologies_" + techCounter;
-    //     techCounter++;
-    //     container.appendChild(input);
-
-    //     var removeButton = document.createElement("button");
-    //     removeButton.type = "button";
-    //     removeButton.className = "btn btn-sm btn-danger ml-2 cancel-btn";
-    //     removeButton.style.position = 'absolute';
-    //     removeButton.textContent = "-";
-    //     removeButton.onclick = function () {
-    //         container.removeChild(input);
-    //         container.removeChild(removeButton);
-    //     };
-    //     container.appendChild(removeButton);
-    // }
-
     let techCounter = 1;
 
     function addTechnologyField() {
@@ -518,28 +595,28 @@
         container.appendChild(div);
     }
 
-    function getTechnologiesValues() {
-        var container = document.getElementById("technologiesContainer");
-        var inputs = container.getElementsByTagName("input");
-        var values = [];
-        for (var i = 0; i < inputs.length; i++) {
-            values.push(inputs[i].value);
-        }
-        console.log(values); // Output the values to the console
-        // You can now use `values` array as needed
-    }
+    // function getTechnologiesValues() {
+    //     var container = document.getElementById("technologiesContainer");
+    //     var inputs = container.getElementsByTagName("input");
+    //     var values = [];
+    //     for (var i = 0; i < inputs.length; i++) {
+    //         values.push(inputs[i].value);
+    //     }
+    //     console.log(values); // Output the values to the console
+    //     // You can now use `values` array as needed
+    // }
 
-    let currentTabId = 'Add_Course';
-    function moveToNextTab(nextTabId) {
-        // Hide current tab
-        document.getElementById(currentTabId).style.display = 'none';
+    // let currentTabId = 'Add_Course';
+    // function moveToNextTab(nextTabId) {
+    //     // Hide current tab
+    //     document.getElementById(currentTabId).style.display = 'none';
 
-        // Show next tab
-        document.getElementById(nextTabId).style.display = 'block';
+    //     // Show next tab
+    //     document.getElementById(nextTabId).style.display = 'block';
 
-        // Update currentTabId for next iteration
-        currentTabId = nextTabId;
-    }
+    //     // Update currentTabId for next iteration
+    //     currentTabId = nextTabId;
+    // }
 
 </script>
 {% endblock %}

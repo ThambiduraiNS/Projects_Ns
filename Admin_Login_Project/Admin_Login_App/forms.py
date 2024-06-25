@@ -55,6 +55,21 @@ class UpdateCourseForm(forms.Form):
             self.fields['Images'].initial = instance.Images
             self.fields['status'].initial = instance.status
 
+
+class viewCourseForm(forms.Form):
+    Title = forms.CharField(label="Course Name", max_length=100)
+    Description = forms.CharField(widget=CKEditorWidget())
+    Technologies = forms.CharField(label="Topics", max_length=150)
+    Images = forms.ImageField(label="Banner Images", widget=ImagePreviewWidget, required=False)
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.pop('instance', None)
+        super(viewCourseForm, self).__init__(*args, **kwargs)
+        if instance:
+            self.fields['Title'].initial = instance.Title
+            self.fields['Description'].initial = instance.Description
+            self.fields['Technologies'].initial = instance.Technologies
+            self.fields['Images'].initial = instance.Images
 # ----------------------------- Partners Logo Form ----------------------------
 
 class PartnersLogoForm(forms.ModelForm):

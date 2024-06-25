@@ -1,0 +1,60 @@
+{% load static %}
+{% load bootstrap_icons %}
+
+{% block course_list %}
+<div class="container" id="specific-div" data-course-id="{{ datas.id }}">
+
+    <div class="row">
+        <div class="col-12 mx-auto">
+            <div class="panel panel-default border">
+                <div class="panel-heading ps-3">
+                    <h3 class="panel-title border-bottom pb-2"> {% bs_icon 'eye-fill' %} <span class="Add_Course">View
+                            Courses</span></h3>
+                </div>
+                <div class="panel-body bg-white px-3 py-3">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id_Title">Course Name</label>
+                            <div>
+                                <input type="text" name="Title" id="id_Title" value="{{ datas.Title }}"
+                                    class="form-control" readonly>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_Description">Description</label><br>
+                            <textarea id="id_Description" name="Description" class="form-control" rows="5"
+                                readonly>{{ datas.Description }}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_Technologies">Topics</label>
+                            <div id="technologiesContainer">
+                                {% for tech in datas.Technologies %}
+                                <input type="text" name="Technologies" class="form-control" value="{{ tech }}" readonly>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <img id="images" src="{{ datas.Images.url }}" alt="{{ datas.Images }}" width="100"
+                                height="100">
+                        </div>
+
+                        <!-- The button is removed as the function will be called on load -->
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const specificDiv = document.getElementById('specific-div');
+        const courseId = specificDiv.getAttribute('data-course-id');
+        viewCourse(courseId);
+    });
+</script>
+{% endblock %}

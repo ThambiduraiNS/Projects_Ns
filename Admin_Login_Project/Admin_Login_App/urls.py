@@ -3,8 +3,8 @@ from .views import (
     admin_login_view, dashboard_view, logout_view, user_logout,
     AdminLoginAPI, get_admin_usernames,
     CourseListCreateView, CourseDetailView, CourseUpdateView, CourseDeleteView,
-    course_view, course_page_view, navbar_save_view,
-    update_course, delete_course, pdf, RegisterView, LogoutView
+    course_view, course_page_view, navbar_save_view,navbar_view_course,
+    update_course, delete_course, view_course, pdf, RegisterView, LogoutView
     # MyTokenObtainPairView, MyTokenRefreshView
 )
 
@@ -30,7 +30,9 @@ urlpatterns = [
     path('courses/', course_view, name='courses'),
     path('course_page/', course_page_view, name='course_page'),
     path('navbar_save_course/', navbar_save_view, name='navbar_save_course'),
+    path('navbar_view_course/', navbar_view_course, name='navbar_view_course'),
     path('update_course/<int:id>/', update_course, name='update_course'),
+    path('view_course/<int:id>/', view_course, name='view_course'),
     path('delete_course/<int:id>/', delete_course, name='delete_course'),
     
     path('pdf/', pdf, name='pdf'),

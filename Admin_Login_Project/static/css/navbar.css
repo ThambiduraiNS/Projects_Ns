@@ -19,12 +19,20 @@
     margin-bottom: 5px;
 }
 
-#trash {
+#trash, #reply{
     margin-top: 15px;
-    background-color: #e3503e;
+    
     border: #dd3520;
     color: #fff;
     width: 40px;
     height: 40px;
     margin-right: 26px;
+}
+
+#trash {
+    background-color: #e3503e;
+}
+
+#reply {
+    background-color: #0b7d07;
 }
