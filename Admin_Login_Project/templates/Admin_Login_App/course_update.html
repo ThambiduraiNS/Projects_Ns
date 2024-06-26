@@ -33,30 +33,30 @@
                                 value="{{ datas.Technologies }}">
                         </div> -->
 
-                        <div class="form-group">
+                        <div class="form-group relative">
                             <label for="id_Technologies">Topics</label>
                             <div id="technologiesContainer">
-                                <input type="text" name="Technologies" id="id_Technologies_0" class="form-control"
+                                <input type="text" name="Technologies" id="id_Technologies_0" class="form-control input-field"
                                     value="{{ datas.Technologies }}">
                             </div>
                             <button type="button" onclick="addTechnologyField()"
-                                class="btn btn-sm btn-success mt-2">+</button>
+                                class="btn btn-sm btn-success mt-2 absolute btn-div">+</button>
                         </div>
                         <!-- <button type="button" onclick="getTechnologiesValues()" class="btn btn-sm btn-primary mt-2">Get
                             Values</button> -->
 
                         <div class="form-group">
-                            <label for="id_Images">Banner Images</label>
+                            <!-- <label for="id_Images">Banner Images</label> -->
                             <img id="images" src="{{ datas.Images.url }}" alt="{{ datas.Images }}" width="100"
                                 height="100">
                             <input type="file" name="images" onchange="checkFileSize(this)" accept="image/*"
                                 id="id_Images">
                         </div>
 
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <label for="status">Status</label>
                             {{form.status}}
-                        </div>
+                        </div> -->
                         <button type="button" onclick="UpdateCourses('{{ datas.id }}')"
                             class="btn btn-primary">Update</button>
                     </form>

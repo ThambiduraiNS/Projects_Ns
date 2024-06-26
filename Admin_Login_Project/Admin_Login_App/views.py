@@ -189,7 +189,7 @@ class CourseDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CourseSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    lookup_field = 'id'
+    lookup_field = 'pk'
 
 class CourseUpdateView(generics.RetrieveUpdateAPIView):
     queryset = Course.objects.all()

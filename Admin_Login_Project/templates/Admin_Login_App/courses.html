@@ -289,10 +289,11 @@
 
 
             const technologyInputs = document.getElementsByName('Technologies');
+
             console.log(technologyInputs)
             let technologies = [];
             for (let i = 0; i < technologyInputs.length; i++) {
-                console.log(technologyInputs.length)
+                console.log(technologyInputs[i].value)
                 technologies.push(technologyInputs[i].value);
             }
             console.log(technologies)
@@ -411,8 +412,8 @@
             const imagesElement = document.getElementById('id_Images');
             const images = imagesElement && imagesElement.files.length > 0 ? imagesElement.files[0] : null;
 
-            const statusElement = document.getElementById('id_status');
-            const status = statusElement ? statusElement.checked : false;
+            // const statusElement = document.getElementById('id_status');
+            // const status = statusElement ? statusElement.checked : false;
 
             if (title === null || description === null || technologies.length === 0) {
                 throw new Error('Required form elements are missing');
@@ -426,7 +427,7 @@
             if (images) {
                 formData.append('Images', images);
             }
-            formData.append('Status', status);
+            // formData.append('Status', status);
 
             const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
             const response = await fetch(`/api/update_courses/${courseId}/`, {
@@ -453,8 +454,11 @@
         }
     }
 
+    
+
     // view course
     async function viewCourse(courseId) {
+        console.log('hello')
         try {
             // Get form data
             const titleElement = document.getElementById('id_Title');
@@ -467,16 +471,18 @@
 
             console.log(descriptionElement);
 
+            
             const technologyInputs = document.getElementsByName('Technologies');
-            console.log(technologyInputs);
-            let technologies = [];
+
+            console.log(technologyInputs)
+
+            console.log(technologyInputs.length)
+            let technologies = "";
             for (let i = 0; i < technologyInputs.length; i++) {
-                const tech = technologyInputs[i].value.trim();
-                if (tech) {
-                    technologies.push(tech);
-                }
+                console.log(technologyInputs[i].value)
+                technologies=technologies+technologyInputs[i].value;
             }
-            console.log(technologies);
+            console.log(technologies)
 
             const imagesElement = document.getElementById('images');
             const images = imagesElement ? imagesElement.src : null;
@@ -520,6 +526,14 @@
             console.error('There was a problem with the fetch operation:', error);
         }
     }
+    
+    // // view course load
+    // document.addEventListener('DOMContentLoaded', function () {
+    //     console.log("hello")
+    //     const specificDiv = document.getElementById('specific-div');
+    //     const courseId = specificDiv.getAttribute('data-course-id');
+    //     viewCourse(courseId);
+    // });
 
     async function deleteCourse() {
         let marked = document.querySelectorAll('input[type="checkbox"]:checked');
@@ -604,18 +618,6 @@
     //     }
     //     console.log(values); // Output the values to the console
     //     // You can now use `values` array as needed
-    // }
-
-    // let currentTabId = 'Add_Course';
-    // function moveToNextTab(nextTabId) {
-    //     // Hide current tab
-    //     document.getElementById(currentTabId).style.display = 'none';
-
-    //     // Show next tab
-    //     document.getElementById(nextTabId).style.display = 'block';
-
-    //     // Update currentTabId for next iteration
-    //     currentTabId = nextTabId;
     // }
 
 </script>

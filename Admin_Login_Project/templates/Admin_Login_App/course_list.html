@@ -103,7 +103,7 @@
                 image.alt = 'course img'
                 image.height = "50";
                 image.width = "50";
-                image.onerror = function() {
+                image.onerror = function () {
                     this.src = "{% static '/images/logo.png' %}";
                 };
 
@@ -119,8 +119,8 @@
 
                 const statusCheckbox = document.createElement('input');
                 statusCheckbox.type = 'checkbox';
-                statusCheckbox.checked = course.status === 'enabled';
-                statusCheckbox.addEventListener('change', () => toggleCourseStatus(course.id, statusCheckbox.checked ? 'enabled' : 'disabled'));
+                statusCheckbox.checked = course.status; // Assuming 'course.status' is a boolean
+                statusCheckbox.addEventListener('change', () => toggleCourseStatus(course.id, statusCheckbox.checked));
 
                 const slider = document.createElement('span');
                 slider.classList.add('slider');
@@ -129,9 +129,44 @@
                 switchLabel.appendChild(slider);
                 statusCell.appendChild(switchLabel);
 
+                async function toggleCourseStatus(courseId, newStatus) {
+                    try {
+                        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+
+                        const response = await fetch(`/api/courses/${courseId}/`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({ status: newStatus }), // newStatus is a boolean
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            console.error('Error data:', errorData);
+                            console.error('Response status:', response.status);
+                            console.error('Response text:', await response.text());
+                            throw new Error('Failed to update course status');
+                        }
+
+                        const data = await response.json();
+                        alert('Course status updated successfully:', data);
+
+                        // Confirm the status update in the UI
+                        if (data.status !== newStatus) {
+                            statusCheckbox.checked = !newStatus;
+                            alert('Failed to update course status. Please try again.');
+                        }
+                    } catch (error) {
+                        console.error('Error updating course status:', error);
+                        alert('Failed to update course status. Please try again later.');
+                    }
+                }
+
                 // Action
                 const updateButtonCell = row.insertCell(6);
-                
+
                 const updateButton = document.createElement('button');
                 updateButton.classList.add('edit-button');
                 updateButton.innerHTML = `{% bs_icon "pencil-fill" %}`;
