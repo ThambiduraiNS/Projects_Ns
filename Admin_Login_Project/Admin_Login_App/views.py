@@ -2,7 +2,7 @@ import io
 import os
 import requests
 
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, logout
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse, HttpResponse
@@ -168,9 +168,8 @@ def update_course(request, id):
     return render(request, 'Admin_Login_App/course_update.html', {'form': form, 'datas': course})
 
 def view_course(request, id):
-    course = Course.objects.get(id=id)
-    form = viewCourseForm(instance=course)
-    return render(request, 'Admin_Login_App/view_course.html', {'form': form, 'datas': course})
+    course = get_object_or_404(Course, id=id)
+    return render(request, 'Admin_Login_App/view_course.html', {'datas': course})
 
 def delete_course(request, id):
     obj = Course.objects.get(id=id)

@@ -8,8 +8,10 @@
 }
 
 .input-field {
-    width: 96% !important;
+    width: 95% !important;
     margin-bottom: 20px;
+    height: 40px;
+    /* margin-top: 10px; */
 }
 
 .form-control:focus {
@@ -38,6 +40,8 @@
 .btn-div {
     right: 0px;
     top: 18px;
+    width: 4%;
+    height: 34px;
 }
 
 .cancel-btn {
@@ -45,10 +49,24 @@
     right: -10px;
     top: -26px;
     margin-top: 3%;
-    width: 3%;
+    width: 4%;
+    height: 34px;
 
 }
 
 .input-div {
     width: 99% !important;
+}
+
+.django-ckeditor-widget {
+    width: 100%;
+}
+
+.plus {
+    fill: #fff;
+}
+
+.plus-img {
+    height: 18px;
+    width: 16px;
 }

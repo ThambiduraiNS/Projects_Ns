@@ -1,6 +1,10 @@
 {% load static %}
 {% load bootstrap_icons %}
 
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/view_course.css' %}">
+{% endblock %}
+
 {% block course_list %}
 <div class="container" id="specific-div" data-course-id="{{ datas.id }}">
 
@@ -12,37 +16,8 @@
                             Courses</span></h3>
                 </div>
                 <div class="panel-body bg-white px-3 py-3">
-                    <form method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="id_Title">Course Name</label>
-                            <div>
-                                <input type="text" name="Title" id="id_Title" value="{{ datas.Title }}"
-                                    class="form-control" readonly>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="id_Description">Description</label><br>
-                            <textarea id="id_Description" name="Description" class="form-control" rows="5"
-                                readonly>{{ datas.Description }}</textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="id_Technologies">Topics</label>
-                            <div id="technologiesContainer">
-                                {% for tech in datas.Technologies %}
-                                    <input type="text" name="Technologies" class="form-control" value="{{ tech }}" readonly>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <img id="images" src="{{ datas.Images.url }}" alt="{{ datas.Images }}" width="100"
-                                height="100">
-                        </div>
-
-                        <!-- The button is removed as the function will be called on load -->
+                    <form id="data-form">
+                        <!-- Form fields will be dynamically generated here -->
                     </form>
                 </div>
             </div>
@@ -50,13 +25,58 @@
     </div>
 </div>
 
+<!-- 
 <script>
-    const specificDiv = document.getElementById('specific-div');
-    const courseId = specificDiv.getAttribute('data-course-id');
+    // setTimeout(fetchData(),3000)
+    async function fetchData() {
+        console.log("ding")
+        try {
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+            const courseId = `{{ datas.id }}`;
+            console.log(courseId);
+            const response = await fetch(`/api/courses/${courseId}/`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
-    document.addEventListener('DOMContentLoaded', function () {
-        viewCourse(courseId);
-    });
-    
-</script>
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            displayDataInForm(data);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            document.getElementById('data').innerText = 'Error fetching data';
+        }
+    }
+
+    function displayDataInForm(data) {
+        const form = document.getElementById('data-form');
+        form.innerHTML = '';
+
+        for (const key in data) {
+            if (data.hasOwnProperty(key)) {
+                const label = document.createElement('label');
+                label.setAttribute('for', key);
+                label.innerText = key;
+
+                const input = document.createElement('input');
+                input.setAttribute('type', 'text');
+                input.setAttribute('id', key);
+                input.setAttribute('name', key);
+                input.setAttribute('value', data[key]);
+                input.setAttribute('readonly', true);
+
+                form.appendChild(label);
+                form.appendChild(input);
+                form.appendChild(document.createElement('br'));
+            }
+        }
+    }
+
+    window.onload = fetchData;    
+</script> -->
 {% endblock %}

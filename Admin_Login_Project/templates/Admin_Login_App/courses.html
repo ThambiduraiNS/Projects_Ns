@@ -210,7 +210,6 @@
         var textareas = document.querySelectorAll(`#${tabId} textarea`);
         textareas.forEach(textarea => {
             var editor = CKEDITOR.replace(textarea.id);
-            console.log(textarea.id)
             editor.on('instanceReady', function () {
                 textarea.style.display = 'none'; // Hide original textarea after CKEditor is initialized
             });
@@ -258,9 +257,30 @@
             .catch(error => console.error('Fetch error:', error));
     }
 
+    // function viewCoursePage(url) {
+    //     loadNavbarViewPage() // Fetch content from the URL using the provided URL fetch(url)
+    //     console.log(url)
+    //     fetch(url)
+    //         .then(response => {
+    //             if (!response.ok) {
+    //                 throw new Error('Network response was not ok');
+    //             }
+    //             return response.text();
+    //         })
+    //         .then(html => {
+    //             // Replace the HTML content of a specific div with the fetched data
+    //             document.getElementById('course-content').innerHTML = html;
+    //             CKEDITOR.replace('id_Description');
+    //         })
+    //         .catch(error => console.error('Fetch error:', error));
+
+    //         // view function
+    //         fetchData();
+    // }
+
     function viewCoursePage(url) {
-        loadNavbarViewPage() // Fetch content from the URL using the provided URL fetch(url)
-        console.log(url)
+        loadNavbarViewPage(); // Fetch content from the URL using the provided URL fetch(url)
+        console.log(url);
         fetch(url)
             .then(response => {
                 if (!response.ok) {
@@ -271,73 +291,80 @@
             .then(html => {
                 // Replace the HTML content of a specific div with the fetched data
                 document.getElementById('course-content').innerHTML = html;
-                CKEDITOR.replace('id_Description');
+                // CKEDITOR.replace('id_Description');
+                const courseId = document.getElementById('specific-div').getAttribute('data-course-id');
+                console.log(courseId);
+                fetchData(courseId);
             })
             .catch(error => console.error('Fetch error:', error));
+
+        // view function
     }
 
-    // Insert course api
-
-    async function InsertCourses() {
+    async function fetchData(courseId) {
+        console.log("ding");
+        console.log(courseId);
         try {
-            // Get form data
-            const title = document.getElementById('id_Title').value;
-            console.log(title)
-            const description = CKEDITOR.instances.id_Description.getData();
-            console.log(description)
-            // const technologies = document.getElementById('id_Technologies');
-
-
-            const technologyInputs = document.getElementsByName('Technologies');
-
-            console.log(technologyInputs)
-            let technologies = [];
-            for (let i = 0; i < technologyInputs.length; i++) {
-                console.log(technologyInputs[i].value)
-                technologies.push(technologyInputs[i].value);
-            }
-            console.log(technologies)
-
-
-            const images = document.getElementById('id_Images').files[0];
-            console.log(images)
-            const status = document.getElementById('id_status').checked;
-            console.log(status)
-
-            // Construct form data
-            const formData = new FormData();
-            formData.append('Title', title);
-            formData.append('Description', description);
-            formData.append('Technologies', technologies.join(','));
-            formData.append('Images', images);
-            formData.append('status', status);
-
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
             const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
-            const response = await fetch(`/api/courses/`, {
-                method: 'POST',
+
+            const response = await fetch(`/api/courses/${courseId}/`, {
+                method: 'GET',
                 headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": csrfToken,
-                    // 'Authorization': `Token ${token}`
-                    "Authorization": `Bearer ${token}`
-                },
-                body: formData
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
-            console.log('Success:', data);
-            alert('Course created successfully!');
-            window.location.href = `courses`;
-
+            data.Description = data.Description.replace(/<\/?[^>]+(>|$)/g, "");
+            data.Technologies = data.Technologies.replace(/,+/g, ',').replace(/^,|,$/g, '');
+            displayDataInForm(data);
         } catch (error) {
-            console.error('There was a problem with the fetch operation:', error);
+            console.error('Error fetching data:', error);
+            document.getElementById('data').innerText = 'Error fetching data';
         }
     }
+
+    function displayDataInForm(data) {
+        const form = document.getElementById('data-form');
+        form.innerHTML = '';
+
+        const fields = ['Title', 'Description', 'Technologies', 'Images'];
+        fields.forEach(field => {
+            if (data.hasOwnProperty(field)) {
+                const label = document.createElement('label');
+                label.setAttribute('for', field);
+                label.innerText = field;
+
+                if (field === 'Images') {
+                    const img = document.createElement('img');
+                    img.src = data[field];
+                    img.alt = 'course image';
+                    img.onerror = function () {
+                        this.src = "{% static '/images/logo.png' %}";
+                    };
+                    form.appendChild(label);
+                    form.appendChild(img);
+                } else {
+                    const input = document.createElement('input');
+                    input.setAttribute('type', 'text');
+                    input.setAttribute('id', field);
+                    input.setAttribute('name', field);
+                    input.setAttribute('value', data[field]);
+                    input.setAttribute('readonly', true);
+                    form.appendChild(label);
+                    form.appendChild(input);
+                }
+
+                form.appendChild(document.createElement('br'));
+            }
+        });
+    }
+
+    // Insert course api
 
     async function InsertCourses() {
         try {
@@ -396,8 +423,6 @@
             const titleElement = document.getElementById('id_Title');
             const title = titleElement ? titleElement.value : null;
 
-            console.log(titleElement)
-
             const description = CKEDITOR.instances.id_Description ? CKEDITOR.instances.id_Description.getData() : null;
 
             const technologyInputs = document.getElementsByName('Technologies');
@@ -407,7 +432,6 @@
                 console.log(technologyInputs.length)
                 technologies.push(technologyInputs[i].value);
             }
-            console.log(technologies)
 
             const imagesElement = document.getElementById('id_Images');
             const images = imagesElement && imagesElement.files.length > 0 ? imagesElement.files[0] : null;
@@ -454,79 +478,79 @@
         }
     }
 
-    
+
 
     // view course
-    async function viewCourse(courseId) {
-        console.log('hello')
-        try {
-            // Get form data
-            const titleElement = document.getElementById('id_Title');
-            const title = titleElement ? titleElement.value : null;
+    // async function viewCourse(courseId) {
+    //     console.log('hello')
+    //     try {
+    //         // Get form data
+    //         const titleElement = document.getElementById('id_Title');
+    //         const title = titleElement ? titleElement.value : null;
 
-            console.log(titleElement);
+    //         console.log(titleElement);
 
-            const descriptionElement = document.getElementById('id_Description');
-            const description = descriptionElement ? descriptionElement.value : null; // Use .value instead of .textContent for textarea
+    //         const descriptionElement = document.getElementById('id_Description');
+    //         const description = descriptionElement ? descriptionElement.value : null; // Use .value instead of .textContent for textarea
 
-            console.log(descriptionElement);
+    //         console.log(descriptionElement);
 
-            
-            const technologyInputs = document.getElementsByName('Technologies');
 
-            console.log(technologyInputs)
+    //         const technologyInputs = document.getElementsByName('Technologies');
 
-            console.log(technologyInputs.length)
-            let technologies = "";
-            for (let i = 0; i < technologyInputs.length; i++) {
-                console.log(technologyInputs[i].value)
-                technologies=technologies+technologyInputs[i].value;
-            }
-            console.log(technologies)
+    //         console.log(technologyInputs)
 
-            const imagesElement = document.getElementById('images');
-            const images = imagesElement ? imagesElement.src : null;
+    //         console.log(technologyInputs.length)
+    //         let technologies = "";
+    //         for (let i = 0; i < technologyInputs.length; i++) {
+    //             console.log(technologyInputs[i].value)
+    //             technologies = technologies + technologyInputs[i].value;
+    //         }
+    //         console.log(technologies)
 
-            console.log(imagesElement);
+    //         const imagesElement = document.getElementById('images');
+    //         const images = imagesElement ? imagesElement.src : null;
 
-            if (title === null || description === null || technologies.length === 0) {
-                throw new Error('Required form elements are missing');
-            }
+    //         console.log(imagesElement);
 
-            // Construct form data
-            const formData = new FormData();
-            formData.append('Title', title);
-            formData.append('Description', description);
-            formData.append('Technologies', JSON.stringify(technologies)); // Use JSON.stringify to pass array
-            if (images) {
-                formData.append('Images', images);
-            }
+    //         if (title === null || description === null || technologies.length === 0) {
+    //             throw new Error('Required form elements are missing');
+    //         }
 
-            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
-            const response = await fetch(`api/courses/${courseId}/`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
+    //         // Construct form data
+    //         const formData = new FormData();
+    //         formData.append('Title', title);
+    //         formData.append('Description', description);
+    //         formData.append('Technologies', JSON.stringify(technologies)); // Use JSON.stringify to pass array
+    //         if (images) {
+    //             formData.append('Images', images);
+    //         }
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Error details:', errorData);
-                throw new Error('Network response was not ok');
-            }
+    //         const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+    //         const response = await fetch(`api/courses/${courseId}/`, {
+    //             method: 'PUT',
+    //             headers: {
+    //                 'Authorization': `Bearer ${token}`
+    //             },
+    //             body: formData
+    //         });
 
-            const data = await response.json();
-            console.log('Success:', data);
-            alert('Course updated successfully!');
-            window.location.href = `/courses`;
+    //         if (!response.ok) {
+    //             const errorData = await response.json();
+    //             console.error('Error details:', errorData);
+    //             throw new Error('Network response was not ok');
+    //         }
 
-        } catch (error) {
-            console.error('There was a problem with the fetch operation:', error);
-        }
-    }
-    
+    //         const data = await response.json();
+    //         console.log('Success:', data);
+    //         alert('Course updated successfully!');
+    //         window.location.href = `/courses`;
+
+    //     } catch (error) {
+    //         console.error('There was a problem with the fetch operation:', error);
+    //     }
+    // }
+
     // // view course load
     // document.addEventListener('DOMContentLoaded', function () {
     //     console.log("hello")
@@ -535,14 +559,114 @@
     //     viewCourse(courseId);
     // });
 
+
+    // async function fetchData(courseId) {
+    //     console.log("ding")
+    //     console.log(courseId)
+    //     try {
+    //         const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+
+    //         const response = await fetch(`/api/courses/${courseId}/`, {
+    //             method: 'GET',
+    //             headers: {
+    //                 'Authorization': `Bearer ${token}`
+    //             }
+    //         });
+
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! status: ${response.status}`);
+    //         }
+
+    //         const data = await response.json();
+    //         displayDataInForm(data);
+    //     } catch (error) {
+    //         console.error('Error fetching data:', error);
+    //         document.getElementById('data').innerText = 'Error fetching data';
+    //     }
+    // }
+
+    // function displayDataInForm(data) {
+    //     const form = document.getElementById('data-form');
+    //     form.innerHTML = '';
+
+    //     for (const key in data) {
+    //         if (data.hasOwnProperty(key)) {
+    //             const label = document.createElement('label');
+    //             label.setAttribute('for', key);
+    //             label.innerText = key;
+
+    //             const input = document.createElement('input');
+    //             input.setAttribute('type', 'text');
+    //             input.setAttribute('id', key);
+    //             input.setAttribute('name', key);
+    //             input.setAttribute('value', data[key]);
+    //             input.setAttribute('readonly', true);
+
+    //             form.appendChild(label);
+    //             form.appendChild(input);
+    //             form.appendChild(document.createElement('br'));
+    //         }
+    //     }
+    // }
+
+    // // window.onload = fetchData;
+
+    // document.addEventListener('DOMContentLoaded', function () {
+    //     console.log("hello view")
+    //     fetchData();
+    // });
+
+    // async function deleteCourse() {
+    //     let marked = document.querySelectorAll('input[type="checkbox"]:checked');
+    //     let ids = Array.from(marked).map(checkbox => checkbox.value);
+
+    //     if (ids.length === 0) {
+    //         alert('No courses selected for deletion.');
+    //         return;
+    //     }
+
+    //     try {
+    //         let failedDeletions = [];
+
+    //         for (let i = 0; i < ids.length; i++) {
+    //             let id = ids[i]; if (id === 'on') { ids.splice(i, 1); i--; continue; }
+
+    //             const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+    //             const response = await fetch(`/api/delete_courses/${id}`, {
+    //                 method: 'DELETE',
+    //                 headers: {
+    //                     'Authorization': `Bearer ${token}`,
+    //                     'Content-Type': 'application/json'
+    //                 }
+    //             });
+
+    //             if (!response.ok) { failedDeletions.push(id); }
+    //         }
+    //         if (failedDeletions.length > 0) {
+    //             console.error('Failed to delete courses with IDs:', failedDeletions);
+    //             alert(`Failed to delete courses with IDs: ${failedDeletions.join(', ')}`);
+    //         } else {
+    //             alert('Courses deleted successfully!');
+    //         }
+
+    //         window.location.href = '/courses';
+
+    //     } catch (error) {
+    //         console.error('There was a problem with the fetch operation:', error);
+    //     }
+    // }
+
     async function deleteCourse() {
         let marked = document.querySelectorAll('input[type="checkbox"]:checked');
         let ids = Array.from(marked).map(checkbox => checkbox.value);
 
-        console.log(ids);
-
         if (ids.length === 0) {
             alert('No courses selected for deletion.');
+            return;
+        }
+
+        let confirmation = confirm(`Are you sure you want to delete ${ids.length} course(s)?`);
+        if (!confirmation) {
             return;
         }
 
@@ -550,9 +674,13 @@
             let failedDeletions = [];
 
             for (let i = 0; i < ids.length; i++) {
-                let id = ids[i]; if (id === 'on') { ids.splice(i, 1); i--; continue; }
+                let id = ids[i];
+                if (id === 'on') {
+                    ids.splice(i, 1);
+                    i--;
+                    continue;
+                }
 
-                console.log(id)
                 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
                 const response = await fetch(`/api/delete_courses/${id}`, {
                     method: 'DELETE',
@@ -562,21 +690,24 @@
                     }
                 });
 
-                if (!response.ok) { failedDeletions.push(id); }
+                if (!response.ok) {
+                    failedDeletions.push(id);
+                }
             }
+
             if (failedDeletions.length > 0) {
                 console.error('Failed to delete courses with IDs:', failedDeletions);
                 alert(`Failed to delete courses with IDs: ${failedDeletions.join(', ')}`);
             } else {
-                alert('Courses deleted successfully!');
+                alert(`Successfully deleted ${ids.length} course(s)!`);
             }
 
             window.location.href = '/courses';
-
         } catch (error) {
             console.error('There was a problem with the fetch operation:', error);
         }
     }
+
 
     // dynamically add and remove field for topics field
 
@@ -600,7 +731,21 @@
         var removeButton = document.createElement("button");
         removeButton.type = "button";
         removeButton.className = "btn btn-sm btn-danger ml-2 cancel-btn";
-        removeButton.textContent = "-";
+
+        // Create the SVG element
+        var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("width", "16");
+        svg.setAttribute("height", "16");
+        svg.setAttribute("viewBox", "0 0 512 512");
+        svg.setAttribute("fill", "#fff");
+
+        // Create the SVG path
+        var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", "M417.4,224H94.6C77.7,224,64,238.3,64,256c0,17.7,13.7,32,30.6,32h322.8c16.9,0,30.6-14.3,30.6-32  C448,238.3,434.3,224,417.4,224z"); // Example SVG path for a cross symbol
+
+        svg.appendChild(path);
+        removeButton.appendChild(svg);
+
         removeButton.onclick = function () {
             container.removeChild(div);
         };
