@@ -1,6 +1,8 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
 from .views import (
-    admin_login_view, dashboard_view, logout_view, user_logout,
+    admin_login_view, dashboard_view, logout_view, user_logout,admin_login_submit,
     AdminLoginAPI, get_admin_usernames,
     CourseListCreateView, CourseDetailView, CourseUpdateView, CourseDeleteView,
     course_view, course_page_view, navbar_save_view,navbar_view_course,
@@ -15,6 +17,8 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
 
     path('admin_login/', admin_login_view, name='admin_login'),
+    path('admin_login_submit/', admin_login_submit, name='admin_login_submit'),
+    
     path('dashboard/', dashboard_view, name='dashboard'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('user_logout/', user_logout, name='user_logout'),
@@ -36,5 +40,5 @@ urlpatterns = [
     path('delete_course/<int:id>/', delete_course, name='delete_course'),
     
     path('pdf/', pdf, name='pdf'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

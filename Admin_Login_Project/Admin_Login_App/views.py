@@ -29,8 +29,15 @@ import jwt, datetime
 from .authentication import JWTAuthentication
 # ----------------------------- Admin Views ----------------------------
 
+
+
 def admin_login_view(request):
     return render(request, 'Admin_Login_App/AdminLogin.html')
+
+def admin_login_submit(request):
+    # print(request)
+    return HttpResponse("Welcome")
+    # return render(request, 'Admin_Login_App/AdminLogin.html')
 
 def dashboard_view(request):
     return render(request, 'Admin_Login_App/Admin_Body.html')

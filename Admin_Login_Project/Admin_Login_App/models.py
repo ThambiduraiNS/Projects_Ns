@@ -6,9 +6,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from ckeditor.fields import RichTextField
 
 def getFileName(request, filename):
-    now_time = datetime.datetime.now().strftime('%Y%m%d%X')
-    new_filename = "{}{}".format(now_time, filename)
-    return os.path.join('Images/', new_filename)
+    return os.path.join('Images/', filename)
 
 def getlogo(request, filename):
     now_time = datetime.datetime.now().strftime('%Y%m%d%X')

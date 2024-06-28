@@ -103,13 +103,11 @@
                 image.alt = 'course img'
                 image.height = "50";
                 image.width = "50";
-                image.onerror = function () {
-                    this.src = "{% static '/images/logo.png' %}";
-                };
 
                 row.insertCell(1).textContent = course.id;
                 row.insertCell(2).textContent = course.Title;
-                row.insertCell(3).textContent = course.Technologies;
+                const Technologies = course.Technologies.replace(/,+/g, ',').replace(/^,|,$/g, '');
+                row.insertCell(3).textContent = Technologies;
                 row.insertCell(4).appendChild(image);
 
                 // enable and disable
@@ -120,7 +118,18 @@
                 const statusCheckbox = document.createElement('input');
                 statusCheckbox.type = 'checkbox';
                 statusCheckbox.checked = course.status; // Assuming 'course.status' is a boolean
-                statusCheckbox.addEventListener('change', () => toggleCourseStatus(course.id, statusCheckbox.checked));
+                // statusCheckbox.addEventListener('change', () => toggleCourseStatus(course.id, statusCheckbox.checked));
+
+                statusCheckbox.addEventListener('change', () => {
+                    const newStatus = statusCheckbox.checked;
+                    const confirmMessage = newStatus ? 'Are you sure you want to enable this course?' : 'Are you sure you want to disable this course?';
+
+                    if (confirm(confirmMessage)) {
+                        toggleCourseStatus(course.id, newStatus);
+                    } else {
+                        statusCheckbox.checked = !newStatus; // Revert the checkbox if the action is canceled
+                    }
+                });
 
                 const slider = document.createElement('span');
                 slider.classList.add('slider');
@@ -151,7 +160,18 @@
                         }
 
                         const data = await response.json();
-                        alert('Course status updated successfully:', data);
+
+                        console.log(course.status)
+
+                        course.status = data.status;
+
+                        if (data.status === false) {
+                            alert('Course Disabled');
+
+                        } else {
+                            alert('Course Enabled');
+
+                        }
 
                         // Confirm the status update in the UI
                         if (data.status !== newStatus) {

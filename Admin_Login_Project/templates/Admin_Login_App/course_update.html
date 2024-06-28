@@ -2,7 +2,7 @@
 {% load bootstrap_icons %}
 
 {% block course_list %}
-<div class="container" id="specific-div">
+<div class="container" id="specific-div" data-course-id="{{ datas.id }}">
 
     <div class="row">
         <div class="col-12 mx-auto">
@@ -47,12 +47,16 @@
                         <!-- <button type="button" onclick="getTechnologiesValues()" class="btn btn-sm btn-primary mt-2">Get
                             Values</button> -->
 
-                        <div class="form-group">
-                            <!-- <label for="id_Images">Banner Images</label> -->
-                            <img id="images" src="{{ datas.Images.url }}" alt="{{ datas.Images }}" width="100"
-                                height="100">
+                        <!-- <div class="form-group">
+                            <img id="images" src="{{ datas.Images.url }}" alt="{{ datas.Images }}" width="50"
+                                height="50">
                             <input type="file" name="images" onchange="checkFileSize(this)" accept="image/*"
-                                id="id_Images">
+                                id="id_Images" value="{{ datas.Images.url }}">
+                        </div> -->
+
+                        <div class="form-group">
+                            <img id="imagePreview" src="{{ datas.Images.url }}" alt="{{ datas.Images }}" width="50" height="50">
+                            <input type="file" name="images" onchange="checkFileSize(this)" accept="image/*" id="id_Images">
                         </div>
 
                         <!-- <div class="form-group">
