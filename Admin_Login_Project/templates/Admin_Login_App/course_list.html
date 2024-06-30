@@ -3,19 +3,16 @@
 
 {% block course_list %}
 <div class="container" id="course-content">
-
     <div class="row">
         <div class="col-12 mx-auto">
             <div class="panel panel-default border">
                 <div class="panel-heading ps-3">
-                    <h3 class="panel-title border-bottom pb-2"> {% bs_icon 'list-task' %} <span
-                            class="Add_Course">Courses List</span></h3>
+                    <h3 class="panel-title border-bottom pb-2 h3-div"> {% bs_icon 'list-task' %} <span class="Add_Course">Courses List</span></h3>
+                    <p class="custom-alert-div" id="custom-alert-message"></p>
                 </div>
+
                 <div class="panel-body bg-white px-3 py-3">
-
-                    <table class="table table-bordered" id="course-table">
-
-                    </table>
+                    <table class="table table-bordered" id="course-table"></table>
                     <a id="pdf" href="/pdf"><input type="submit" value="Download PDF"></a>
                     <div class="pagination">
                         <span class="step-links">
@@ -38,22 +35,44 @@
             </div>
         </div>
     </div>
-
 </div>
 
 <script>
+    function showAlert(confirmMessage, onOk, onCancel) {
+        const alertBox = document.getElementById('custom-alert-message');
+        alertBox.textContent = confirmMessage;
+        alertBox.style.display = 'block';
+
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 3000);
+
+        document.getElementById('custom-alert-ok').onclick = () => {
+            closeAlert();
+            if (onOk) onOk();
+        };
+
+        document.getElementById('custom-alert-cancel').onclick = () => {
+            closeAlert();
+            if (onCancel) onCancel();
+        };
+    }
+
+    function closeAlert() {
+        const alertBox = document.getElementById('custom-alert');
+        alertBox.classList.add('hidden');
+        alertBox.style.display = 'none';
+    }
+
     async function fetchCourses() {
         try {
-
             const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
-
-            const response = await fetch('/api/courses/',
-                {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    }
-                });
+            const response = await fetch('/api/courses/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                }
+            });
 
             const data = await response.json();
             const table = document.getElementById('course-table');
@@ -81,8 +100,6 @@
                 cell.outerHTML = `<th>${headerText}</th>`;
             });
 
-            // const reversedData = data.reverse();
-
             // Create table body
             const body = table.createTBody();
 
@@ -93,14 +110,12 @@
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.value = course.id;
-                checkbox.className = "pl"
                 checkbox.classList.add('rowCheckbox');
                 checkboxCell.appendChild(checkbox);
 
-                const image = document.createElement('img')
-                console.log(image)
-                image.src = course.Images
-                image.alt = 'course img'
+                const image = document.createElement('img');
+                image.src = course.Images;
+                image.alt = 'course img';
                 image.height = "50";
                 image.width = "50";
 
@@ -110,7 +125,7 @@
                 row.insertCell(3).textContent = Technologies;
                 row.insertCell(4).appendChild(image);
 
-                // enable and disable
+                // Enable and disable
                 const statusCell = row.insertCell(5);
                 const switchLabel = document.createElement('label');
                 switchLabel.classList.add('switch');
@@ -118,18 +133,12 @@
                 const statusCheckbox = document.createElement('input');
                 statusCheckbox.type = 'checkbox';
                 statusCheckbox.checked = course.status; // Assuming 'course.status' is a boolean
-                // statusCheckbox.addEventListener('change', () => toggleCourseStatus(course.id, statusCheckbox.checked));
 
-                statusCheckbox.addEventListener('change', () => {
-                    const newStatus = statusCheckbox.checked;
-                    const confirmMessage = newStatus ? 'Are you sure you want to enable this course?' : 'Are you sure you want to disable this course?';
-
-                    if (confirm(confirmMessage)) {
-                        toggleCourseStatus(course.id, newStatus);
-                    } else {
-                        statusCheckbox.checked = !newStatus; // Revert the checkbox if the action is canceled
-                    }
-                });
+                statusCheckbox.addEventListener('change', () => showAlert(
+                    statusCheckbox.checked ? 'Enable Successfully' : 'Disable Successfully',
+                    () => toggleCourseStatus(course.id, statusCheckbox.checked),
+                    () => statusCheckbox.checked = !statusCheckbox.checked
+                ));
 
                 const slider = document.createElement('span');
                 slider.classList.add('slider');
@@ -137,52 +146,6 @@
                 switchLabel.appendChild(statusCheckbox);
                 switchLabel.appendChild(slider);
                 statusCell.appendChild(switchLabel);
-
-                async function toggleCourseStatus(courseId, newStatus) {
-                    try {
-                        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
-
-                        const response = await fetch(`/api/courses/${courseId}/`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`,
-                            },
-                            body: JSON.stringify({ status: newStatus }), // newStatus is a boolean
-                        });
-
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            console.error('Error data:', errorData);
-                            console.error('Response status:', response.status);
-                            console.error('Response text:', await response.text());
-                            throw new Error('Failed to update course status');
-                        }
-
-                        const data = await response.json();
-
-                        console.log(course.status)
-
-                        course.status = data.status;
-
-                        if (data.status === false) {
-                            alert('Course Disabled');
-
-                        } else {
-                            alert('Course Enabled');
-
-                        }
-
-                        // Confirm the status update in the UI
-                        if (data.status !== newStatus) {
-                            statusCheckbox.checked = !newStatus;
-                            alert('Failed to update course status. Please try again.');
-                        }
-                    } catch (error) {
-                        console.error('Error updating course status:', error);
-                        alert('Failed to update course status. Please try again later.');
-                    }
-                }
 
                 // Action
                 const updateButtonCell = row.insertCell(6);
@@ -205,9 +168,33 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        fetchCourses();
-    });
+    async function toggleCourseStatus(courseId, newStatus) {
+        try {
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+            const response = await fetch(`/api/courses/${courseId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update course status');
+            }
+
+            const data = await response.json();
+            if (data.status !== newStatus) {
+                showAlert('Failed to update course status. Please try again.');
+            }
+        } catch (error) {
+            console.error(error);
+            showAlert('Failed to update course status. Please try again later.');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchCourses);
 </script>
 
 {% endblock %}

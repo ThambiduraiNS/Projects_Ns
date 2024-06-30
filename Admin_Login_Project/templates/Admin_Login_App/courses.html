@@ -443,56 +443,111 @@
         }
     }
 
+    // async function deleteCourse() {
+    //     let marked = document.querySelectorAll('input[type="checkbox"]:checked');
+    //     let ids = Array.from(marked).map(checkbox => checkbox.value);
+
+    //     if (ids.length === 0) {
+    //         alert('No courses selected for deletion.');
+    //         return;
+    //     }
+
+    //     let confirmation = confirm(`Are you sure you want to delete this course?`);
+    //     if (!confirmation) {
+    //         return;
+    //     }
+
+    //     try {
+    //         let failedDeletions = [];
+
+    //         for (let i = 0; i < ids.length; i++) {
+    //             let id = ids[i];
+    //             if (id === 'on') {
+    //                 ids.splice(i, 1);
+    //                 i--;
+    //                 continue;
+    //             }
+
+    //             const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+    //             const response = await fetch(`/api/delete_courses/${id}`, {
+    //                 method: 'DELETE',
+    //                 headers: {
+    //                     'Authorization': `Bearer ${token}`,
+    //                     'Content-Type': 'application/json'
+    //                 }
+    //             });
+
+    //             if (!response.ok) {
+    //                 failedDeletions.push(id);
+    //             }
+    //         }
+
+    //         if (failedDeletions.length > 0) {
+    //             console.error('Failed to delete courses with IDs:', failedDeletions);
+    //             alert(`Failed to delete courses with IDs: ${failedDeletions.join(', ')}`);
+    //         } 
+    //         // else {
+    //         //     alert(`Successfully deleted ${ids.length} course(s)!`);
+    //         // }
+
+    //         window.location.href = '/courses';
+    //     } catch (error) {
+    //         console.error('There was a problem with the fetch operation:', error);
+    //     }
+    // }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+        let marked = document.querySelectorAll('input[type="checkbox"]:checked');
+        let ids = Array.from(marked).map(checkbox => checkbox.value);
+
+        let failedDeletions = [];
+
+        for (let i = 0; i < ids.length; i++) {
+            let id = ids[i];
+            if (id === 'on') {
+                ids.splice(i, 1);
+                i--;
+                continue;
+            }
+
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+            const response = await fetch(`/api/delete_courses/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                failedDeletions.push(id);
+            }
+        }
+
+        if (failedDeletions.length > 0) {
+            console.error('Failed to delete courses with IDs:', failedDeletions);
+            alert(`Failed to delete courses with IDs: ${failedDeletions.join(', ')}`);
+        }
+
+        window.location.href = '/courses';
+    });
+
     async function deleteCourse() {
         let marked = document.querySelectorAll('input[type="checkbox"]:checked');
         let ids = Array.from(marked).map(checkbox => checkbox.value);
 
         if (ids.length === 0) {
-            alert('No courses selected for deletion.');
+            let selectCourseAlertModal = new bootstrap.Modal(document.getElementById('selectCourseAlertModal'), {
+                keyboard: false
+            });
+            selectCourseAlertModal.show();
             return;
         }
 
-        let confirmation = confirm(`Are you sure you want to delete this course(s)?`);
-        if (!confirmation) {
-            return;
-        }
-
-        try {
-            let failedDeletions = [];
-
-            for (let i = 0; i < ids.length; i++) {
-                let id = ids[i];
-                if (id === 'on') {
-                    ids.splice(i, 1);
-                    i--;
-                    continue;
-                }
-
-                const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
-                const response = await fetch(`/api/delete_courses/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    failedDeletions.push(id);
-                }
-            }
-
-            if (failedDeletions.length > 0) {
-                console.error('Failed to delete courses with IDs:', failedDeletions);
-                alert(`Failed to delete courses with IDs: ${failedDeletions.join(', ')}`);
-            } else {
-                alert(`Successfully deleted ${ids.length} course(s)!`);
-            }
-
-            window.location.href = '/courses';
-        } catch (error) {
-            console.error('There was a problem with the fetch operation:', error);
-        }
+        let deleteCourseModal = new bootstrap.Modal(document.getElementById('deleteCourseModal'), {
+            keyboard: false
+        });
+        deleteCourseModal.show();
     }
 
 
