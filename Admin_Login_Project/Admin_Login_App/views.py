@@ -292,6 +292,11 @@ from django.http import Http404
 
 from . import renderers
 
+def clean_html(raw_html):
+    cleanr = re.compile('<.*?>')
+    cleantext = re.sub(cleanr, '', raw_html)
+    return cleantext
+
 def pdf(request, *args, **kwargs):
     data = Course.objects.all()
     
@@ -300,13 +305,17 @@ def pdf(request, *args, **kwargs):
     
     content_list = []
     for course_obj in data:
+        cleaned_description = clean_html(course_obj.Description).replace(',', '')
+        cleaned_technologies = clean_html(course_obj.Technologies).replace(',', '')
+        
         content_list.append({
             'Course_Name': course_obj.Title, 
-            'Technologies': course_obj.Technologies,
-            'Description': course_obj.Description,
+            'Technologies': cleaned_technologies,
+            'Description': cleaned_description,
             'Images': course_obj.Images,
         })
         print(course_obj.Images)
+    
     content = {'courses': content_list}
     return renderers.render_to_pdf('Admin_Login_App/course_data_list.html', content)
 
@@ -319,8 +328,20 @@ from openpyxl.drawing.image import Image as ExcelImage
 from openpyxl.styles import Font, Alignment, Border, Side
 from PIL import Image as PILImage
 from io import BytesIO
+import re
 
-def csv_view(request):
+def clean_text(text):
+    """Remove unwanted commas and HTML tags from the text."""
+    # Remove HTML tags
+    clean = re.compile('<.*?>')
+    text = re.sub(clean, '', text)
+    
+    # Remove unwanted commas (you can define what "unwanted" means in your context)
+    text = text.replace(',', '')
+
+    return text
+
+def excel_view(request):
     data = Course.objects.all()
 
     # Create an Excel workbook
@@ -348,7 +369,9 @@ def csv_view(request):
     )
 
     for idx, item in enumerate(data, start=2):
-        ws.append([item.Title, item.Technologies, item.Description])
+        cleaned_topics = clean_text(item.Technologies)
+        cleaned_description = clean_text(item.Description)
+        ws.append([item.Title, cleaned_topics, cleaned_description])
 
         # Align text and apply borders
         for cell in ws[idx]:
@@ -359,35 +382,38 @@ def csv_view(request):
         if item.Images:
             image_path = item.Images.path  # Get the file path of the image
 
-            # Resize the image
+            # Resize the image and add padding
             with PILImage.open(image_path) as img:
-                max_width = 50
-                max_height = 50
+                max_width = 50  # New max width after considering padding
+                max_height = 50  # New max height after considering padding
                 img.thumbnail((max_width, max_height))
 
-                # Save the resized image to a BytesIO object
+                # Add padding
+                padding = 10  # 10px padding on each side
+                padded_img = PILImage.new("RGBA", (img.width + 2 * padding, img.height + 2 * padding), (255, 255, 255, 0))
+                padded_img.paste(img, (padding, padding))
+
+                # Save the padded image to a BytesIO object
                 image_stream = BytesIO()
-                img.save(image_stream, format='PNG')
+                padded_img.save(image_stream, format='PNG')
                 image_stream.seek(0)
 
                 # Create an ExcelImage object from the BytesIO object
                 excel_img = ExcelImage(image_stream)
 
                 # Adjust the row height to match the image height
-                row_height = img.height * 0.75  # Adjust the scaling factor if needed
+                row_height = padded_img.height * 0.75  # Adjust the scaling factor if needed
                 ws.row_dimensions[idx].height = row_height
 
                 # Center the image in the cell
-                col_width = ws.column_dimensions['D'].width
-                img_width, img_height = excel_img.width, excel_img.height
-                x_offset = (col_width * 7.5 - img_width) / 2  # Approx 7.5 pixels per Excel column unit
-                y_offset = (row_height - img_height) / 2
+                col_letter = 'D'
+                col_width = ws.column_dimensions[col_letter].width
+                x_offset = (col_width * 7.5 - excel_img.width) / 2  # Approx 7.5 pixels per Excel column unit
+                y_offset = (row_height - excel_img.height) / 2
 
-                excel_img.anchor = f'D{idx}'  # Adjust the cell reference to the correct column
+                # Anchor the image to the cell
+                excel_img.anchor = f'{col_letter}{idx}'
                 ws.add_image(excel_img)
-
-                # Set the position of the image using offset
-                excel_img.anchor += f" - {int(x_offset)} - {int(y_offset)}"
 
     # Create an in-memory file-like object to save the workbook
     output = BytesIO()
@@ -397,7 +423,46 @@ def csv_view(request):
     # Create the HTTP response with Excel content type and attachment header
     response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename="generated_excel.xlsx"'
-
+    
     return response
 
+def clean_html(raw_html):
+    cleanr = re.compile('<.*?>')
+    cleantext = re.sub(cleanr, '', raw_html)
+    return cleantext
 
+def csv_view(request, *args, **kwargs):
+    data = Course.objects.all()
+    
+    if not data:
+        raise Http404("No courses available.")
+    
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=courses.csv'
+    
+    writer = csv.writer(response)
+    
+    # Write the header
+    headers = ['Course Name', 'Technologies', 'Description', 'Images']
+    writer.writerow(headers)
+    
+    # Write the data
+    for course_obj in data:
+        cleaned_description = clean_html(course_obj.Description).replace(',', '')
+        cleaned_technologies = clean_html(course_obj.Technologies).replace(',', '')
+        
+        # Assuming course_obj.Images is a URL or a list of URLs
+        images = course_obj.Images
+        if isinstance(images, list):
+            images = 'http://127.0.0.1:8000/media/'.join(images)  # Join multiple URLs with a semicolon
+        
+        row = [
+            course_obj.Title,
+            cleaned_technologies,
+            cleaned_description,
+            images,
+        ]
+        writer.writerow(row)
+    
+    return response

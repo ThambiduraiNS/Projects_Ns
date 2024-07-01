@@ -6,7 +6,7 @@ from .views import (
     AdminLoginAPI, get_admin_usernames,
     CourseListCreateView, CourseDetailView, CourseUpdateView, CourseDeleteView,
     course_view, course_page_view, navbar_save_view,navbar_view_course,
-    update_course, delete_course, view_course, pdf, csv_view, RegisterView, LogoutView
+    update_course, delete_course, view_course, pdf, excel_view, csv_view, RegisterView, LogoutView
     # MyTokenObtainPairView, MyTokenRefreshView
 )
 
@@ -40,6 +40,7 @@ urlpatterns = [
     path('delete_course/<int:id>/', delete_course, name='delete_course'),
     
     path('pdf/', pdf, name='pdf'),
+    path('excel/', excel_view, name='csv'),
     path('csv/', csv_view, name='csv'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
