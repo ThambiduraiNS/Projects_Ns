@@ -3,87 +3,100 @@
 
 {% block navbar %}
 
-    <div class="col-12" id="navbar-content">
-        <div class="row py-3">
-            <div class="col-10">
-                <nav class="navbar navbar-expand-lg bg-body-tertiary">
-                    <div class="container-fluid">
-                        <a class="navbar-brand Dashboard" href="#">
-                            <h1>Courses</h1>
-                        </a>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                            aria-expanded="false" aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <div class="collapse navbar-collapse " id="navbarSupportedContent">
-                            <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-                                <ol class="breadcrumb navbar-div">
-                                    <li class="breadcrumb-item"><a href="#">Home</a></li>
-                                    <li class="breadcrumb-item active text-info" aria-current="page"><a href="#">Courses</a></li>
-                                </ol>
-                            </nav>
-                        </div>
-                    </div>
-                </nav>
-            </div>
-            <div class="col-2 d-flex justify-content-end">
-                <a><button onclick="loadCoursePage()" data-toggle="tooltip" title="Add New" type="button" class="btn" id="plus"><span class="plus">+</span></button></a>
-                <a><button onclick="deleteCourse()" data-toggle="tooltip" title="Delete" type="button" class="btn" id="trash">{% bs_icon 'trash'%}</button></a>
-            </div>
-        </div>
-    </div>
-
-     <!-- List of courses with checkboxes -->
-     <div class="container">
-        <div class="row">
-            {% for course in courses %}
-                <div class="col-12 mb-2">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="{{ course.id }}" id="course{{ course.id }}">
-                        <label class="form-check-label" for="course{{ course.id }}">
-                            {{ course.name }}
-                        </label>
+<div class="col-12" id="navbar-content">
+    <div class="row py-3">
+        <div class="col-8">
+            <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                <div class="container-fluid">
+                    <a class="navbar-brand Dashboard" href="#">
+                        <h1>Courses</h1>
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse " id="navbarSupportedContent">
+                        <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+                            <ol class="breadcrumb navbar-div">
+                                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                                <li class="breadcrumb-item active text-info" aria-current="page"><a href="#">Courses</a>
+                                </li>
+                            </ol>
+                        </nav>
                     </div>
                 </div>
-            {% endfor %}
+            </nav>
+        </div>
+        <div class="col-4 d-flex justify-content-end">
+            <div class="dropdown">
+                <button class="dropbtn">Export to{% bs_icon 'caret-right-fill' %}</button>
+                <div class="dropdown-content">
+                    <a href="/pdf">{% bs_icon 'file-earmark-pdf' %}PDF</a>
+                    <a href="#">{% bs_icon 'file-earmark-spreadsheet' %}EXCEL</a>
+                    <a href="/csv">{% bs_icon 'filetype-csv' %}CSV</a>
+                </div>
+            </div>
+            <a><button onclick="loadCoursePage()" data-toggle="tooltip" title="Add New" type="button" class="btn"
+                    id="plus"><span class="plus">+</span></button></a>
+            <a><button onclick="deleteCourse()" data-toggle="tooltip" title="Delete" type="button" class="btn"
+                    id="trash">{% bs_icon 'trash'%}</button></a>
         </div>
     </div>
+</div>
 
-    <!-- Delete Course Modal -->
-    <div class="modal fade" id="deleteCourseModal" tabindex="-1" aria-labelledby="deleteCourseModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteCourseModalLabel">Confirm Deletion</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to delete the selected course?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
-                </div>
+<!-- List of courses with checkboxes -->
+<div class="container">
+    <div class="row">
+        {% for course in courses %}
+        <div class="col-12 mb-2">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="{{ course.id }}" id="course{{ course.id }}">
+                <label class="form-check-label" for="course{{ course.id }}">
+                    {{ course.name }}
+                </label>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Delete Course Modal -->
+<div class="modal fade" id="deleteCourseModal" tabindex="-1" aria-labelledby="deleteCourseModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteCourseModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the selected course?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Select Course Alert Modal -->
-    <div class="modal fade" id="selectCourseAlertModal" tabindex="-1" aria-labelledby="selectCourseAlertModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="selectCourseAlertModalLabel">Alert</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Please select at least one course to delete.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
-                </div>
+<!-- Select Course Alert Modal -->
+<div class="modal fade" id="selectCourseAlertModal" tabindex="-1" aria-labelledby="selectCourseAlertModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="selectCourseAlertModalLabel">Alert</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Please select at least one course to delete.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
             </div>
         </div>
     </div>
+</div>
 {% endblock %}

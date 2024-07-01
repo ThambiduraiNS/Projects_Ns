@@ -1,4 +1,4 @@
-import io
+from io import BytesIO 
 import os
 import requests
 
@@ -15,8 +15,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 # from rest_framework_simplejwt.authentication import JWTAuthentication
 from PIL import Image as PILImage
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-
+from reportlab.lib.pagesizes import letter, TABLOID
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.lib.units import inch
 from .forms import CoursesForm, UpdateCourseForm, viewCourseForm
 from .models import AdminLogin, Course, PartnerLogo, Testimonial, PlacementStory, FAQ, Blog, Career
 from .serializers import CourseSerializer, UserSerializer
@@ -215,50 +218,186 @@ class CourseDeleteView(generics.DestroyAPIView):
         instance = self.get_object()
         instance.delete()
         return Response(print("delete Movie"))
+
 # ----------------------------- PDF Generation ----------------------------
 
-def pdf(request):
+# def pdf(request):
+#     data = Course.objects.all()
+    
+#     buffer = BytesIO()
+#     doc = SimpleDocTemplate(buffer, pagesize=TABLOID)
+#     elements = []
+
+#     # Define the table data
+#     table_data = [["Course Name", "Technologies", "Description", "Image"]]
+    
+#     for course_obj in data:
+#         # Retrieve the image
+#         image_path = ""
+#         image_data = None
+#         print(course_obj.Images.url)
+#         try:
+#             response = requests.get(course_obj.Images.url, stream=True)
+#             if response.status_code == 200:
+#                 image = PILImage.open(response.raw)
+#                 image_path = f"temp_image_{course_obj.id}.png"
+#                 image.save(image_path)
+#                 image_data = Image(image_path, 2*inch, 2*inch)
+#         except Exception as e:
+#             image_data = Paragraph("Image not available", getSampleStyleSheet()['Normal'])
+
+#         # Create a Paragraph for the description to handle overflow
+#         description = Paragraph(course_obj.Description, getSampleStyleSheet()['Normal'])
+
+#         # Add the course data to the table
+#         course_row = [
+#             course_obj.Title,
+#             course_obj.Technologies,
+#             description,
+#             image_data
+#         ]
+#         table_data.append(course_row)
+
+#     # Create the table
+#     table = Table(table_data, colWidths=[2*inch, 1.5*inch, 3.5*inch, 2*inch])
+
+#     # Add a table style
+#     table.setStyle(TableStyle([
+#         ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+#         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+#         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+#         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+#         ('FONTSIZE', (0, 0), (-1, 0), 14),
+#         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+#         ('BACKGROUND', (0, 1), (-1, -1), colors.lightgrey),
+#         ('GRID', (0, 0), (-1, -1), 1, colors.black),
+#     ]))
+
+#     elements.append(table)
+#     doc.build(elements)
+
+#     buffer.seek(0)
+#     x = datetime.datetime.now()
+#     date_format = x.strftime("%Y-%m-%d")
+#     time_format = x.strftime("%H-%M-%S")
+#     save_path = f'pdf/course_list_{date_format}_{time_format}.pdf'
+    
+#     with open(save_path, 'wb') as f:
+#         f.write(buffer.getvalue())
+    
+#     return HttpResponse(f"PDF file has been generated and saved at: {save_path}")
+
+
+from django.http import Http404
+
+from . import renderers
+
+def pdf(request, *args, **kwargs):
     data = Course.objects.all()
-    field_height = 20
-    total_height = len(data) * field_height * 6  # Assuming you have 6 fields per course
-
-    buffer = io.BytesIO()
-    p = canvas.Canvas(buffer, pagesize=(letter[0], total_height))
-    p.setFont('Times-Roman', 14)
-    y_position = total_height - 20
-
+    
+    if not data:
+        raise Http404("No courses available.")
+    
+    content_list = []
     for course_obj in data:
-        data_row = f"Course Name: {course_obj.Title}, Technologies: {course_obj.Technologies}, Description: {course_obj.Description}, Status: {course_obj.status}"
-        p.drawString(20, y_position, data_row)
-        y_position -= field_height
+        content_list.append({
+            'Course_Name': course_obj.Title, 
+            'Technologies': course_obj.Technologies,
+            'Description': course_obj.Description,
+            'Images': course_obj.Images,
+        })
+        print(course_obj.Images)
+    content = {'courses': content_list}
+    return renderers.render_to_pdf('Admin_Login_App/course_data_list.html', content)
 
-        try:
-            response = requests.get(course_obj.Images.url, stream=True)
-            if response.status_code == 200:
-                image = PILImage.open(response.raw)
-                image_path = f"image_{course_obj.id}.png"
-                image.save(image_path)
-                p.drawImage(image_path, 20, y_position - 100, width=100, height=100)
-                y_position -= 120
-        except Exception as e:
-            p.drawString(20, y_position, f"Image could not be loaded: {str(e)}")
-            y_position -= field_height
+import csv
+from django.template import loader
+from django.http import HttpResponse
 
-        if y_position <= 50:
-            p.showPage()
-            p.setFont('Times-Roman', 14)
-            y_position = total_height - 20
+import openpyxl
+from openpyxl.drawing.image import Image as ExcelImage
+from openpyxl.styles import Font, Alignment, Border, Side
+from PIL import Image as PILImage
+from io import BytesIO
 
-    p.showPage()
-    p.save()
+def csv_view(request):
+    data = Course.objects.all()
 
-    buffer.seek(0)
-    x = datetime.now()
-    date_format = x.strftime("%Y-%m-%d")
-    time_format = x.strftime("%Hhr-%Mm-%Ss")
-    save_path = f'pdf/formapp_{date_format}_{time_format}.pdf'
-    
-    with open(save_path, 'wb') as f:
-        f.write(buffer.getbuffer())
-    
-    return HttpResponse(f"PDF file has been generated and saved at: {save_path}")
+    # Create an Excel workbook
+    wb = openpyxl.Workbook()
+    ws = wb.active
+
+    # Define header row with font style and alignment
+    header_row = ['Course Name', 'Topics', 'Description', 'Images']
+    ws.append(header_row)
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FF0000')
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    # Set column widths for better readability
+    column_widths = [20, 30, 50, 20]
+    for i, width in enumerate(column_widths, start=1):
+        ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = width
+
+    # Add data rows with alignment and borders
+    thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+
+    for idx, item in enumerate(data, start=2):
+        ws.append([item.Title, item.Technologies, item.Description])
+
+        # Align text and apply borders
+        for cell in ws[idx]:
+            cell.alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
+            cell.border = thin_border
+
+        # Add image to the worksheet if it exists
+        if item.Images:
+            image_path = item.Images.path  # Get the file path of the image
+
+            # Resize the image
+            with PILImage.open(image_path) as img:
+                max_width = 50
+                max_height = 50
+                img.thumbnail((max_width, max_height))
+
+                # Save the resized image to a BytesIO object
+                image_stream = BytesIO()
+                img.save(image_stream, format='PNG')
+                image_stream.seek(0)
+
+                # Create an ExcelImage object from the BytesIO object
+                excel_img = ExcelImage(image_stream)
+
+                # Adjust the row height to match the image height
+                row_height = img.height * 0.75  # Adjust the scaling factor if needed
+                ws.row_dimensions[idx].height = row_height
+
+                # Center the image in the cell
+                col_width = ws.column_dimensions['D'].width
+                img_width, img_height = excel_img.width, excel_img.height
+                x_offset = (col_width * 7.5 - img_width) / 2  # Approx 7.5 pixels per Excel column unit
+                y_offset = (row_height - img_height) / 2
+
+                excel_img.anchor = f'D{idx}'  # Adjust the cell reference to the correct column
+                ws.add_image(excel_img)
+
+                # Set the position of the image using offset
+                excel_img.anchor += f" - {int(x_offset)} - {int(y_offset)}"
+
+    # Create an in-memory file-like object to save the workbook
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    # Create the HTTP response with Excel content type and attachment header
+    response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="generated_excel.xlsx"'
+
+    return response
+
+

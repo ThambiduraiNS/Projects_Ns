@@ -7,13 +7,14 @@
         <div class="col-12 mx-auto">
             <div class="panel panel-default border">
                 <div class="panel-heading ps-3">
-                    <h3 class="panel-title border-bottom pb-2 h3-div"> {% bs_icon 'list-task' %} <span class="Add_Course">Courses List</span></h3>
+                    <h3 class="panel-title border-bottom pb-2 h3-div"> {% bs_icon 'list-task' %} <span
+                            class="Add_Course">Courses List</span></h3>
                     <p class="custom-alert-div" id="custom-alert-message"></p>
                 </div>
 
                 <div class="panel-body bg-white px-3 py-3">
                     <table class="table table-bordered" id="course-table"></table>
-                    <a id="pdf" href="/pdf"><input type="submit" value="Download PDF"></a>
+                    <!-- <a id="pdf" href="/pdf"><input type="submit" value="Download PDF"></a> -->
                     <div class="pagination">
                         <span class="step-links">
                             {% if page_obj.has_previous %}
@@ -38,31 +39,21 @@
 </div>
 
 <script>
-    function showAlert(confirmMessage, onOk, onCancel) {
+    function showMessage(message) {
         const alertBox = document.getElementById('custom-alert-message');
-        alertBox.textContent = confirmMessage;
+        alertBox.textContent = message;
         alertBox.style.display = 'block';
 
         setTimeout(() => {
             alertBox.style.display = 'none';
         }, 3000);
-
-        document.getElementById('custom-alert-ok').onclick = () => {
-            closeAlert();
-            if (onOk) onOk();
-        };
-
-        document.getElementById('custom-alert-cancel').onclick = () => {
-            closeAlert();
-            if (onCancel) onCancel();
-        };
     }
 
-    function closeAlert() {
-        const alertBox = document.getElementById('custom-alert');
-        alertBox.classList.add('hidden');
-        alertBox.style.display = 'none';
-    }
+    // function closeAlert() {
+    //     const alertBox = document.getElementById('custom-alert');
+    //     alertBox.classList.add('hidden');
+    //     alertBox.style.display = 'none';
+    // }
 
     async function fetchCourses() {
         try {
@@ -134,11 +125,21 @@
                 statusCheckbox.type = 'checkbox';
                 statusCheckbox.checked = course.status; // Assuming 'course.status' is a boolean
 
-                statusCheckbox.addEventListener('change', () => showAlert(
-                    statusCheckbox.checked ? 'Enable Successfully' : 'Disable Successfully',
-                    () => toggleCourseStatus(course.id, statusCheckbox.checked),
-                    () => statusCheckbox.checked = !statusCheckbox.checked
-                ));
+                // statusCheckbox.addEventListener('change', () => showAlert(
+                //     statusCheckbox.checked ? 'Enable Successfully' : 'Disable Successfully',
+                //     () => toggleCourseStatus(course.id, statusCheckbox.checked),
+                //     () => statusCheckbox.checked = !statusCheckbox.checked
+                // ));
+
+                statusCheckbox.addEventListener('change', async () => {
+                    try {
+                        await toggleCourseStatus(course.id, statusCheckbox.checked);
+                        showMessage(statusCheckbox.checked ? 'Enabled Successfully' : 'Disabled Successfully');
+                    } catch (error) {
+                        console.error(error);
+                        showMessage('Failed to update course status. Please try again later.');
+                    }
+                });
 
                 const slider = document.createElement('span');
                 slider.classList.add('slider');

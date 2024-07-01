@@ -332,7 +332,7 @@
                 technologies.push(technologyInputs[i].value);
             }
             const images = document.getElementById('id_Images').files[0];
-            const status = document.getElementById('id_status').checked;
+            // const status = document.getElementById('id_status').checked;
 
             // Construct form data
             const formData = new FormData();
@@ -340,7 +340,7 @@
             formData.append('Description', description);
             formData.append('Technologies', technologies.join(','));
             formData.append('Images', images);
-            formData.append('status', status);
+            // formData.append('status', status);
 
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
             const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
@@ -496,20 +496,15 @@
     //     }
     // }
 
-    document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+    document.getElementById('confirmDeleteBtn').addEventListener('click', async function () {
         let marked = document.querySelectorAll('input[type="checkbox"]:checked');
-        let ids = Array.from(marked).map(checkbox => checkbox.value);
+        let ids = Array.from(marked).map(checkbox => checkbox.value).filter(id => id !== 'on');
+
+        console.log(ids); // This line helps in debugging
 
         let failedDeletions = [];
 
-        for (let i = 0; i < ids.length; i++) {
-            let id = ids[i];
-            if (id === 'on') {
-                ids.splice(i, 1);
-                i--;
-                continue;
-            }
-
+        for (let id of ids) {
             const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
             const response = await fetch(`/api/delete_courses/${id}`, {
                 method: 'DELETE',
@@ -534,7 +529,7 @@
 
     async function deleteCourse() {
         let marked = document.querySelectorAll('input[type="checkbox"]:checked');
-        let ids = Array.from(marked).map(checkbox => checkbox.value);
+        let ids = Array.from(marked).map(checkbox => checkbox.value).filter(id => id !== 'on');
 
         if (ids.length === 0) {
             let selectCourseAlertModal = new bootstrap.Modal(document.getElementById('selectCourseAlertModal'), {
