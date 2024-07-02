@@ -152,14 +152,18 @@ class LogoutView(APIView):
 
 def course_view(request):
     data = Course.objects.order_by('Title').all()
-    paginator = Paginator(data, 5)
+    # paginator = Paginator(data, 5)
+    # page_number = request.GET.get("page")
+    # try:
+    #     page_obj = paginator.page(page_number)
+    # except PageNotAnInteger:
+    #     page_obj = paginator.page(1)
+    # except EmptyPage:
+    #     page_obj = paginator.page(paginator.num_pages)
+    paginator = Paginator(data, 5)  # Show 5 contacts per page.
+
     page_number = request.GET.get("page")
-    try:
-        page_obj = paginator.page(page_number)
-    except PageNotAnInteger:
-        page_obj = paginator.page(1)
-    except EmptyPage:
-        page_obj = paginator.page(paginator.num_pages)
+    page_obj = paginator.get_page(page_number)
     return render(request, 'Admin_Login_App/courses.html', {'page_obj': page_obj})
 
 def course_page_view(request):
@@ -352,8 +356,8 @@ def excel_view(request):
     header_row = ['Course Name', 'Topics', 'Description', 'Images']
     ws.append(header_row)
     for cell in ws[1]:
-        cell.font = Font(bold=True, color='FF0000')
-        cell.alignment = Alignment(horizontal='center', vertical='center')
+        cell.font = Font(bold=True, color='000000')
+        cell.alignment = Alignment(horizontal='left', vertical='center')
 
     # Set column widths for better readability
     column_widths = [20, 30, 50, 20]
@@ -431,38 +435,101 @@ def clean_html(raw_html):
     cleantext = re.sub(cleanr, '', raw_html)
     return cleantext
 
-def csv_view(request, *args, **kwargs):
-    data = Course.objects.all()
+# def csv_view(request, *args, **kwargs):
+#     data = Course.objects.all()
     
-    if not data:
-        raise Http404("No courses available.")
+#     if not data:
+#         raise Http404("No courses available.")
     
-    # Create the HttpResponse object with the appropriate CSV header.
+#     # Create the HttpResponse object with the appropriate CSV header.
+#     response = HttpResponse(content_type='text/csv')
+#     response['Content-Disposition'] = 'attachment; filename=courses.csv'
+    
+#     writer = csv.writer(response)
+    
+#     # Write the header
+#     headers = ['Course Name', 'Technologies', 'Description', 'Images']
+#     writer.writerow(headers)
+    
+#     # Write the data
+#     for course_obj in data:
+#         cleaned_description = clean_html(course_obj.Description).replace(',', '')
+#         cleaned_technologies = clean_html(course_obj.Technologies).replace(',', '')
+        
+#         # Assuming course_obj.Images is a URL or a list of URLs
+#         images = course_obj.Images
+#         if isinstance(images, list):
+#             images = 'http://127.0.0.1:8000/media/'.join(images)  # Join multiple URLs with a semicolon
+        
+#         row = [
+#             course_obj.Title,
+#             cleaned_technologies,
+#             cleaned_description,
+#             images,
+#         ]
+#         writer.writerow(row)
+    
+#     return response
+
+# CSV file creation
+
+# def csv_view(request):
+#     data = Course.objects.all()
+    
+#     # Define your CSV data
+#     csv_data = [
+#         ['Course Name', 'Technologies', 'Description', 'Images']  # Header row
+#     ]
+
+#     for item in data:
+#         cleaned_description = clean_html(item.Description).replace(',', '')
+#         cleaned_technologies = clean_html(item.Technologies).replace(',', '')
+#         img_path = item.Images
+#         image = f"http://127.0.0.1:8000/media/{img_path}"
+#         csv_data.append([item.Title, cleaned_technologies, cleaned_description, image]) 
+
+#     # Load the template
+#     template = loader.get_template('Admin_Login_App/csv_template.txt')
+
+#     # Render the template with the CSV data
+#     rendered_template = template.render({'data': csv_data})
+
+#     # Create the HTTP response with CSV content type and attachment header
+#     response = HttpResponse(rendered_template, content_type='text/csv')
+#     response['Content-Disposition'] = 'attachment; filename="generated_csv.csv"'
+    
+#     return response
+
+from django.http import HttpResponse
+from django.template import loader
+from .models import Course
+from django.utils.html import strip_tags
+
+def clean_html(html):
+    # Function to clean HTML content by stripping tags
+    return strip_tags(html)
+
+def csv_view(request):
+    # Create the HttpResponse object with the appropriate CSV header
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=courses.csv'
-    
+    response['Content-Disposition'] = 'attachment; filename="generated_csv.csv"'
+
     writer = csv.writer(response)
     
-    # Write the header
-    headers = ['Course Name', 'Technologies', 'Description', 'Images']
-    writer.writerow(headers)
-    
-    # Write the data
-    for course_obj in data:
-        cleaned_description = clean_html(course_obj.Description).replace(',', '')
-        cleaned_technologies = clean_html(course_obj.Technologies).replace(',', '')
-        
-        # Assuming course_obj.Images is a URL or a list of URLs
-        images = course_obj.Images
-        if isinstance(images, list):
-            images = 'http://127.0.0.1:8000/media/'.join(images)  # Join multiple URLs with a semicolon
-        
-        row = [
-            course_obj.Title,
-            cleaned_technologies,
-            cleaned_description,
-            images,
-        ]
-        writer.writerow(row)
-    
+    # Write the header row
+    writer.writerow(['Course Name', 'Technologies', 'Description', 'Image URL'])
+
+    # Fetch all courses
+    data = Course.objects.all()
+
+    for item in data:
+        # Clean and prepare the data for each row
+        cleaned_description = clean_html(item.Description).replace(',', '')
+        cleaned_technologies = clean_html(item.Technologies).replace(',', '')
+        img_path = item.Images
+        image_url = f"http://127.0.0.1:8000/media/{img_path}"
+
+        # Write the data row
+        writer.writerow([item.Title, cleaned_technologies, cleaned_description, image_url])
+
     return response
