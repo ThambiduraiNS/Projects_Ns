@@ -24,6 +24,9 @@ from .forms import CoursesForm, UpdateCourseForm, viewCourseForm
 from .models import AdminLogin, Course, PartnerLogo, Testimonial, PlacementStory, FAQ, Blog, Career
 from .serializers import CourseSerializer, UserSerializer
 
+from django.http import HttpResponse
+from django.template import loader
+from django.utils.html import strip_tags
 # from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 # from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 
@@ -301,27 +304,27 @@ def clean_html(raw_html):
     cleantext = re.sub(cleanr, '', raw_html)
     return cleantext
 
-def pdf(request, *args, **kwargs):
-    data = Course.objects.all()
+# def pdf(request, *args, **kwargs):
+#     data = Course.objects.all()
     
-    if not data:
-        raise Http404("No courses available.")
+#     if not data:
+#         raise Http404("No courses available.")
     
-    content_list = []
-    for course_obj in data:
-        cleaned_description = clean_html(course_obj.Description).replace(',', '')
-        cleaned_technologies = clean_html(course_obj.Technologies).replace(',', '')
+#     content_list = []
+#     for course_obj in data:
+#         cleaned_description = clean_html(course_obj.Description).replace(',', '')
+#         cleaned_technologies = clean_html(course_obj.Technologies).replace(',', '')
         
-        content_list.append({
-            'Course_Name': course_obj.Title, 
-            'Technologies': cleaned_technologies,
-            'Description': cleaned_description,
-            'Images': course_obj.Images,
-        })
-        print(course_obj.Images)
+#         content_list.append({
+#             'Course_Name': course_obj.Title, 
+#             'Technologies': cleaned_technologies,
+#             'Description': cleaned_description,
+#             'Images': course_obj.Images,
+#         })
+#         print(course_obj.Images)
     
-    content = {'courses': content_list}
-    return renderers.render_to_pdf('Admin_Login_App/course_data_list.html', content)
+#     content = {'courses': content_list}
+#     return renderers.render_to_pdf('Admin_Login_App/course_data_list.html', content)
 
 import csv
 from django.template import loader
@@ -345,191 +348,338 @@ def clean_text(text):
 
     return text
 
-def excel_view(request):
-    data = Course.objects.all()
+# def excel_view(request):
+#     data = Course.objects.all()
 
-    # Create an Excel workbook
-    wb = openpyxl.Workbook()
-    ws = wb.active
+#     # Create an Excel workbook
+#     wb = openpyxl.Workbook()
+#     ws = wb.active
 
-    # Define header row with font style and alignment
-    header_row = ['Course Name', 'Topics', 'Description', 'Images']
-    ws.append(header_row)
-    for cell in ws[1]:
-        cell.font = Font(bold=True, color='000000')
-        cell.alignment = Alignment(horizontal='left', vertical='center')
+#     # Define header row with font style and alignment
+#     header_row = ['Course Name', 'Topics', 'Description', 'Images']
+#     ws.append(header_row)
+#     for cell in ws[1]:
+#         cell.font = Font(bold=True, color='000000')
+#         cell.alignment = Alignment(horizontal='left', vertical='center')
 
-    # Set column widths for better readability
-    column_widths = [20, 30, 50, 20]
-    for i, width in enumerate(column_widths, start=1):
-        ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = width
+#     # Set column widths for better readability
+#     column_widths = [20, 30, 50, 20]
+#     for i, width in enumerate(column_widths, start=1):
+#         ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = width
 
-    # Add data rows with alignment and borders
-    thin_border = Border(
-        left=Side(style='thin'),
-        right=Side(style='thin'),
-        top=Side(style='thin'),
-        bottom=Side(style='thin')
-    )
+#     # Add data rows with alignment and borders
+#     thin_border = Border(
+#         left=Side(style='thin'),
+#         right=Side(style='thin'),
+#         top=Side(style='thin'),
+#         bottom=Side(style='thin')
+#     )
 
-    for idx, item in enumerate(data, start=2):
-        cleaned_topics = clean_text(item.Technologies)
-        cleaned_description = clean_text(item.Description)
-        ws.append([item.Title, cleaned_topics, cleaned_description])
+#     for idx, item in enumerate(data, start=2):
+#         cleaned_topics = clean_text(item.Technologies)
+#         cleaned_description = clean_text(item.Description)
+#         ws.append([item.Title, cleaned_topics, cleaned_description])
 
-        # Align text and apply borders
-        for cell in ws[idx]:
-            cell.alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
-            cell.border = thin_border
+#         # Align text and apply borders
+#         for cell in ws[idx]:
+#             cell.alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
+#             cell.border = thin_border
 
-        # Add image to the worksheet if it exists
-        if item.Images:
-            image_path = item.Images.path  # Get the file path of the image
+#         # Add image to the worksheet if it exists
+#         if item.Images:
+#             image_path = item.Images.path  # Get the file path of the image
 
-            # Resize the image and add padding
-            with PILImage.open(image_path) as img:
-                max_width = 50  # New max width after considering padding
-                max_height = 50  # New max height after considering padding
-                img.thumbnail((max_width, max_height))
+#             # Resize the image and add padding
+#             with PILImage.open(image_path) as img:
+#                 max_width = 50  # New max width after considering padding
+#                 max_height = 50  # New max height after considering padding
+#                 img.thumbnail((max_width, max_height))
 
-                # Add padding
-                padding = 10  # 10px padding on each side
-                padded_img = PILImage.new("RGBA", (img.width + 2 * padding, img.height + 2 * padding), (255, 255, 255, 0))
-                padded_img.paste(img, (padding, padding))
+#                 # Add padding
+#                 padding = 10  # 10px padding on each side
+#                 padded_img = PILImage.new("RGBA", (img.width + 2 * padding, img.height + 2 * padding), (255, 255, 255, 0))
+#                 padded_img.paste(img, (padding, padding))
 
-                # Save the padded image to a BytesIO object
-                image_stream = BytesIO()
-                padded_img.save(image_stream, format='PNG')
-                image_stream.seek(0)
+#                 # Save the padded image to a BytesIO object
+#                 image_stream = BytesIO()
+#                 padded_img.save(image_stream, format='PNG')
+#                 image_stream.seek(0)
 
-                # Create an ExcelImage object from the BytesIO object
-                excel_img = ExcelImage(image_stream)
+#                 # Create an ExcelImage object from the BytesIO object
+#                 excel_img = ExcelImage(image_stream)
 
-                # Adjust the row height to match the image height
-                row_height = padded_img.height * 0.75  # Adjust the scaling factor if needed
-                ws.row_dimensions[idx].height = row_height
+#                 # Adjust the row height to match the image height
+#                 row_height = padded_img.height * 0.75  # Adjust the scaling factor if needed
+#                 ws.row_dimensions[idx].height = row_height
 
-                # Center the image in the cell
-                col_letter = 'D'
-                col_width = ws.column_dimensions[col_letter].width
-                x_offset = (col_width * 7.5 - excel_img.width) / 2  # Approx 7.5 pixels per Excel column unit
-                y_offset = (row_height - excel_img.height) / 2
+#                 # Center the image in the cell
+#                 col_letter = 'D'
+#                 col_width = ws.column_dimensions[col_letter].width
+#                 x_offset = (col_width * 7.5 - excel_img.width) / 2  # Approx 7.5 pixels per Excel column unit
+#                 y_offset = (row_height - excel_img.height) / 2
 
-                # Anchor the image to the cell
-                excel_img.anchor = f'{col_letter}{idx}'
-                ws.add_image(excel_img)
+#                 # Anchor the image to the cell
+#                 excel_img.anchor = f'{col_letter}{idx}'
+#                 ws.add_image(excel_img)
 
-    # Create an in-memory file-like object to save the workbook
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
+#     # Create an in-memory file-like object to save the workbook
+#     output = BytesIO()
+#     wb.save(output)
+#     output.seek(0)
 
-    # Create the HTTP response with Excel content type and attachment header
-    response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="generated_excel.xlsx"'
+#     # Create the HTTP response with Excel content type and attachment header
+#     response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+#     response['Content-Disposition'] = 'attachment; filename="generated_excel.xlsx"'
     
-    return response
+#     return response
 
 def clean_html(raw_html):
     cleanr = re.compile('<.*?>')
     cleantext = re.sub(cleanr, '', raw_html)
     return cleantext
 
-# def csv_view(request, *args, **kwargs):
-#     data = Course.objects.all()
-    
-#     if not data:
-#         raise Http404("No courses available.")
-    
-#     # Create the HttpResponse object with the appropriate CSV header.
-#     response = HttpResponse(content_type='text/csv')
-#     response['Content-Disposition'] = 'attachment; filename=courses.csv'
-    
-#     writer = csv.writer(response)
-    
-#     # Write the header
-#     headers = ['Course Name', 'Technologies', 'Description', 'Images']
-#     writer.writerow(headers)
-    
-#     # Write the data
-#     for course_obj in data:
-#         cleaned_description = clean_html(course_obj.Description).replace(',', '')
-#         cleaned_technologies = clean_html(course_obj.Technologies).replace(',', '')
-        
-#         # Assuming course_obj.Images is a URL or a list of URLs
-#         images = course_obj.Images
-#         if isinstance(images, list):
-#             images = 'http://127.0.0.1:8000/media/'.join(images)  # Join multiple URLs with a semicolon
-        
-#         row = [
-#             course_obj.Title,
-#             cleaned_technologies,
-#             cleaned_description,
-#             images,
-#         ]
-#         writer.writerow(row)
-    
-#     return response
-
-# CSV file creation
-
-# def csv_view(request):
-#     data = Course.objects.all()
-    
-#     # Define your CSV data
-#     csv_data = [
-#         ['Course Name', 'Technologies', 'Description', 'Images']  # Header row
-#     ]
-
-#     for item in data:
-#         cleaned_description = clean_html(item.Description).replace(',', '')
-#         cleaned_technologies = clean_html(item.Technologies).replace(',', '')
-#         img_path = item.Images
-#         image = f"http://127.0.0.1:8000/media/{img_path}"
-#         csv_data.append([item.Title, cleaned_technologies, cleaned_description, image]) 
-
-#     # Load the template
-#     template = loader.get_template('Admin_Login_App/csv_template.txt')
-
-#     # Render the template with the CSV data
-#     rendered_template = template.render({'data': csv_data})
-
-#     # Create the HTTP response with CSV content type and attachment header
-#     response = HttpResponse(rendered_template, content_type='text/csv')
-#     response['Content-Disposition'] = 'attachment; filename="generated_csv.csv"'
-    
-#     return response
-
-from django.http import HttpResponse
-from django.template import loader
-from .models import Course
-from django.utils.html import strip_tags
 
 def clean_html(html):
     # Function to clean HTML content by stripping tags
     return strip_tags(html)
 
-def csv_view(request):
-    # Create the HttpResponse object with the appropriate CSV header
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="generated_csv.csv"'
+import csv
+from django.http import HttpResponse
 
-    writer = csv.writer(response)
-    
-    # Write the header row
-    writer.writerow(['Course Name', 'Technologies', 'Description', 'Image URL'])
+# def csv_view(request):
+#     if request.method == 'POST':
+#         ids = request.POST.get('ids', '').split(',')  # Get the ids from AJAX request
 
-    # Fetch all courses
-    data = Course.objects.all()
+#         # Create the HttpResponse object with the appropriate CSV header
+#         response = HttpResponse(content_type='text/csv')
+#         response['Content-Disposition'] = 'attachment; filename="course_list_csv.csv"'
 
-    for item in data:
-        # Clean and prepare the data for each row
-        cleaned_description = clean_html(item.Description).replace(',', '')
-        cleaned_technologies = clean_html(item.Technologies).replace(',', '')
-        img_path = item.Images
-        image_url = f"http://127.0.0.1:8000/media/{img_path}"
+#         writer = csv.writer(response)
+        
+#         # Write the header row
+#         writer.writerow(['Course Name', 'Technologies', 'Description', 'Image URL'])
 
-        # Write the data row
-        writer.writerow([item.Title, cleaned_technologies, cleaned_description, image_url])
+#         # Assuming you have a Course model, adjust this part accordingly
+#         # from .models import Course
 
-    return response
+#         # Fetch selected courses based on IDs
+#         selected_courses = Course.objects.filter(id__in=ids)
+        
+#         for course in selected_courses:
+#             # Clean and prepare the data for each row
+#             cleaned_description = clean_html(course.Description).replace(',', '')
+#             cleaned_technologies = clean_html(course.Technologies).replace(',', '')
+#             img_path = course.Images
+#             image_url = f"http://127.0.0.1:8000/media/{img_path}"
+
+#             # Write the data row
+#             writer.writerow([course.Title, cleaned_technologies, cleaned_description, image_url])
+
+#         return response
+
+#     # Handle GET request or non-AJAX POST request here if needed
+#     return HttpResponse(status=400)  # Bad request if not POST or AJAX
+
+
+
+# def csv_view(request):
+#     if request.method == 'POST':
+#         ids = request.POST.get('ids', '').split(',')  # Get the ids from AJAX request
+
+#         # Create the HttpResponse object with the appropriate CSV header
+#         response = HttpResponse(content_type='text/csv')
+#         response['Content-Disposition'] = 'attachment; filename="course_list_csv.csv"'
+
+#         writer = csv.writer(response)
+        
+#         # Write the header row
+#         writer.writerow(['Course Name', 'Technologies', 'Description', 'Image URL'])
+
+#         # Fetch selected courses based on IDs
+#         selected_courses = Course.objects.filter(id__in=ids)
+        
+#         for course in selected_courses:
+#             # Clean and prepare the data for each row
+#             cleaned_description = clean_html(course.Description).replace(',', '')  # Replace with actual field names
+#             cleaned_technologies = clean_html(course.Technologies).replace(',', '')  # Replace with actual field names
+#             img_path = course.Images.url if course.Images else ''  # Replace with actual field names and image URL logic
+#             image_url = request.build_absolute_uri(img_path)
+
+#             # Write the data row
+#             writer.writerow([course.Title, cleaned_technologies, cleaned_description, image_url])
+
+#         return response
+
+#     # Handle GET request or non-AJAX POST request here if needed
+#     return HttpResponse(status=400)  # Bad request if not POST or AJAX
+
+
+import csv
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def export_courses_csv(request):
+    if request.method == 'POST':
+        ids = request.POST.get('ids', '').split(',')  # Get the ids from AJAX request
+
+        # Create the HttpResponse object with the appropriate CSV header
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="course_list_csv.csv"'
+
+        writer = csv.writer(response)
+
+        # Write the header row
+        writer.writerow(['Course Name', 'Technologies', 'Description', 'Image URL'])
+
+        # Fetch selected courses based on IDs
+        selected_courses = Course.objects.filter(id__in=ids)
+
+        for course in selected_courses:
+            # Clean and prepare the data for each row
+            cleaned_description = clean_html(course.Description).replace(',', '')  # Replace with actual field names
+            cleaned_technologies = clean_html(course.Technologies).replace(',', '')  # Replace with actual field names
+            img_path = course.Images.url if course.Images else ''  # Replace with actual field names and image URL logic
+            image_url = request.build_absolute_uri(img_path)
+
+            # Write the data row
+            writer.writerow([course.Title, cleaned_technologies, cleaned_description, image_url])
+
+        return response
+
+    # Handle GET request or non-AJAX POST request here if needed
+    return HttpResponse(status=400)  # Bad request if not POST or AJAX
+
+
+import openpyxl
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def export_courses_excel(request):
+    if request.method == 'POST':
+        ids = request.POST.get('ids', '').split(',')  # Get the ids from AJAX request
+
+        # Fetch selected courses based on IDs
+        selected_courses = Course.objects.filter(id__in=ids)
+
+        # Create an Excel workbook
+        wb = openpyxl.Workbook()
+        ws = wb.active
+
+        # Define header row with font style and alignment
+        header_row = ['Course Name', 'Topics', 'Description', 'Images']
+        ws.append(header_row)
+        for cell in ws[1]:
+            cell.font = Font(bold=True, color='000000')
+            cell.alignment = Alignment(horizontal='left', vertical='center')
+
+        # Set column widths for better readability
+        column_widths = [20, 30, 50, 20]
+        for i, width in enumerate(column_widths, start=1):
+            ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = width
+
+        # Add data rows with alignment and borders
+        thin_border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+
+        for idx, item in enumerate(selected_courses, start=2):
+            cleaned_topics = clean_text(item.Technologies)
+            cleaned_description = clean_text(item.Description)
+            ws.append([item.Title, cleaned_topics, cleaned_description])
+
+            # Align text and apply borders
+            for cell in ws[idx]:
+                cell.alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
+                cell.border = thin_border
+
+            # Add image to the worksheet if it exists
+            if item.Images:
+                image_path = item.Images.path  # Get the file path of the image
+
+                # Resize the image and add padding
+                with PILImage.open(image_path) as img:
+                    max_width = 50  # New max width after considering padding
+                    max_height = 50  # New max height after considering padding
+                    img.thumbnail((max_width, max_height))
+
+                    # Add padding
+                    padding = 10  # 10px padding on each side
+                    padded_img = PILImage.new("RGBA", (img.width + 2 * padding, img.height + 2 * padding), (255, 255, 255, 0))
+                    padded_img.paste(img, (padding, padding))
+
+                    # Save the padded image to a BytesIO object
+                    image_stream = BytesIO()
+                    padded_img.save(image_stream, format='PNG')
+                    image_stream.seek(0)
+
+                    # Create an ExcelImage object from the BytesIO object
+                    excel_img = ExcelImage(image_stream)
+
+                    # Adjust the row height to match the image height
+                    row_height = padded_img.height * 0.75  # Adjust the scaling factor if needed
+                    ws.row_dimensions[idx].height = row_height
+
+                    # Center the image in the cell
+                    col_letter = 'D'
+                    col_width = ws.column_dimensions[col_letter].width
+                    x_offset = (col_width * 7.5 - excel_img.width) / 2  # Approx 7.5 pixels per Excel column unit
+                    y_offset = (row_height - excel_img.height) / 2
+
+                    # Anchor the image to the cell
+                    excel_img.anchor = f'{col_letter}{idx}'
+                    ws.add_image(excel_img)
+
+        # Create an in-memory file-like object to save the workbook
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+
+        # Create the HTTP response with Excel content type and attachment header
+        response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="generated_excel.xlsx"'
+        
+        return response
+
+    # Handle GET request or non-AJAX POST request here if needed
+    return HttpResponse(status=400)  # Bad request if not POST or AJAX
+
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def export_courses_pdf(request):
+    if request.method == 'POST':
+        ids = request.POST.get('ids', '').split(',')  # Get the ids from AJAX request
+
+        # # Fetch selected courses based on IDs
+        selected_courses = Course.objects.filter(id__in=ids)
+        
+        if not selected_courses:
+            raise Http404("No courses available.")
+        
+        content_list = []
+        for course_obj in selected_courses:
+            cleaned_description = clean_html(course_obj.Description).replace(',', '')
+            cleaned_technologies = clean_html(course_obj.Technologies).replace(',', '')
+            
+            content_list.append({
+                'Course_Name': course_obj.Title, 
+                'Technologies': cleaned_technologies,
+                'Description': cleaned_description,
+                'Images': course_obj.Images,
+            })
+            print(course_obj.Images)
+        
+        content = {'courses': content_list}
+        return renderers.render_to_pdf('Admin_Login_App/course_data_list.html', content)
+
+    # Handle GET request or non-AJAX POST request here if needed
+    return HttpResponse(status=400)  # Bad request if not POST or AJAX

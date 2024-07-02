@@ -527,7 +527,158 @@
         window.location.href = '/courses';
     });
 
-    async function deleteCourse() {
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     // Assuming you have a button or link for exporting CSV
+    //     const exportCsvLink = document.getElementById('export-csv-link');
+    //     if (exportCsvLink) {
+    //         exportCsvLink.addEventListener('click', function(event) {
+    //             event.preventDefault();  // Prevent default link behavior
+
+    //             const checkboxes = document.querySelectorAll('.form-check-input:checked');
+    //             const selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+    //             console.log(selectedIds)
+
+    //             if (selectedIds.length === 0) {
+    //                 // Optionally show an alert or message to the user
+    //                 alert('Please select at least one course to export.');
+    //             } else {
+    //                 // Send selected IDs to csv_view endpoint via AJAX
+    //                 sendSelectedIds(selectedIds);
+    //             }
+    //         });
+    //     }
+    // });
+
+    // async function sendSelectedIds(ids) {
+    //     try {
+    //         let formData = new FormData();
+    //         formData.append('ids', ids.join(','));
+
+    //         let response = await fetch('/csv_view/', {
+    //             method: 'POST',
+    //             body: formData
+    //         });
+
+    //         if (!response.ok) {
+    //             throw new Error('Network response was not ok');
+    //         }
+
+    //         // Optionally handle success response if needed
+    //         // For example, you can redirect or display a success message
+    //         // window.location.href = '/path/to/success/page';
+
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //         // Handle error appropriately (e.g., show error message to user)
+    //     }
+    // }
+
+    // document.addEventListener('DOMContentLoaded', function () {
+    //     const exportCsvLink = document.getElementById('export-csv-link');
+    //     if (exportCsvLink) {
+    //         exportCsvLink.addEventListener('click', function (event) {
+    //             event.preventDefault();  // Prevent default link behavior
+
+    //             // Debugging: Log message to confirm event listener is firing
+    //             console.log('Export CSV link clicked');
+
+    //             // const checkboxes = document.querySelectorAll('.form-check-input:checked');
+    //             // const selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+    //             let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    //             let selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value).filter(id => id !== 'on');
+
+    //             // Debugging: Log selectedIds array to check its contents
+    //             console.log('Selected IDs:', selectedIds);
+
+    //             if (selectedIds.length === 0) {
+    //                 // Optionally show an alert or message to the user
+    //                 alert('Please select at least one course to export.');
+    //             } else {
+    //                 // Send selected IDs to csv_view endpoint via AJAX
+    //                 sendSelectedIds(selectedIds);
+    //             }
+    //         });
+    //     }
+    // });
+
+    // async function sendSelectedIds(ids) {
+    //     try {
+    //         let formData = new FormData();
+    //         formData.append('ids', ids.join(','));
+    //         formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');  // Include CSRF token from Django template
+
+    //         let response = await fetch('/csv/', {
+    //             method: 'POST',
+    //             body: formData
+    //         });
+
+    //         if (!response.ok) {
+    //             throw new Error('Network response was not ok');
+    //         }
+
+    //         // Optionally handle success response if needed
+    //         // For example, you can redirect or display a success message
+    //         // window.location.href = '/path/to/success/page';
+
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //         // Handle error appropriately (e.g., show error message to user)
+    //     }
+    // }
+
+    // async function sendSelectedIds(ids) {
+    //     try {
+    //         const csrftoken = getCookie('csrftoken');  // Fetch CSRF token from cookies
+
+    //         let formData = new FormData();
+    //         formData.append('ids', ids.join(','));
+    //         formData.append('csrfmiddlewaretoken', csrftoken);  // Include CSRF token in FormData
+
+    //         let response = await fetch('/csv/', {
+    //             method: 'POST',
+    //             body: formData
+    //         });
+
+    //         if (!response.ok) {
+    //             throw new Error('Network response was not ok');
+    //         }
+
+    //         // Download the generated CSV file
+    //         const blob = await response.blob();
+    //         const url = window.URL.createObjectURL(blob);
+    //         const a = document.createElement('a');
+    //         a.style.display = 'none';
+    //         a.href = url;
+    //         a.download = 'course_list_csv.csv';
+    //         document.body.appendChild(a);
+    //         a.click();
+    //         window.URL.revokeObjectURL(url);
+
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //         // Handle error appropriately (e.g., show error message to user)
+    //     }
+    // }
+
+
+    // function getCookie(name) {
+    //     let cookieValue = null;
+    //     if (document.cookie && document.cookie !== '') {
+    //         const cookies = document.cookie.split(';');
+    //         for (let i = 0; i < cookies.length; i++) {
+    //             const cookie = cookies[i].trim();
+    //             if (cookie.startsWith(name + '=')) {
+    //                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     return cookieValue;
+    // }
+
+    function deleteCourse() {
         let marked = document.querySelectorAll('input[type="checkbox"]:checked');
         let ids = Array.from(marked).map(checkbox => checkbox.value).filter(id => id !== 'on');
 
@@ -539,10 +690,8 @@
             return;
         }
 
-        let deleteCourseModal = new bootstrap.Modal(document.getElementById('deleteCourseModal'), {
-            keyboard: false
-        });
-        deleteCourseModal.show();
+        // Call the function to send selected ids to backend
+        sendSelectedIds(ids);
     }
 
 
@@ -601,6 +750,262 @@
     //     console.log(values); // Output the values to the console
     //     // You can now use `values` array as needed
     // }
+
+
+    // async function exportCSV() {
+    //     // const checkboxes = document.querySelectorAll('.form-check-input:checked');
+    //     // const selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+    //     let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    //     let selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value).filter(id => id !== 'on');
+
+    //     if (selectedIds.length === 0) {
+    //         alert('Please select at least one course to export.');
+    //     } else {
+    //         sendSelectedIds(selectedIds, 'csv');
+    //     }
+    // }
+
+    // async function sendSelectedIds(ids, format) {
+    //     try {
+    //         const csrftoken = getCookie('csrftoken');  // Fetch CSRF token from cookies
+
+    //         let formData = new FormData();
+    //         formData.append('ids', ids.join(','));
+    //         formData.append('format', format);  // Include export format
+
+    //         formData.append('csrfmiddlewaretoken', csrftoken);  // Include CSRF token in FormData
+
+    //         let response = await fetch('/export_courses_csv/', {
+    //             method: 'POST',
+    //             body: formData
+    //         });
+
+    //         if (!response.ok) {
+    //             throw new Error('Network response was not ok');
+    //         }
+
+    //         // Download the generated file
+    //         const blob = await response.blob();
+    //         const url = window.URL.createObjectURL(blob);
+    //         const a = document.createElement('a');
+    //         a.style.display = 'none';
+    //         a.href = url;
+    //         a.download = 'course_list_csv.csv';
+    //         document.body.appendChild(a);
+    //         a.click();
+    //         window.URL.revokeObjectURL(url);
+
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //         // Handle error appropriately (e.g., show error message to user)
+    //     }
+    // }
+
+    // function getCookie(name) {
+    //     let cookieValue = null;
+    //     if (document.cookie && document.cookie !== '') {
+    //         const cookies = document.cookie.split(';');
+    //         for (let i = 0; i < cookies.length; i++) {
+    //             const cookie = cookies[i].trim();
+    //             if (cookie.startsWith(name + '=')) {
+    //                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     return cookieValue;
+    // }
+
+
+    // async function exportExcel() {
+    //     let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    //     let selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value).filter(id => id !== 'on');
+
+    //     if (selectedIds.length === 0) {
+    //         alert('Please select at least one course to export.');
+    //     } else {
+    //         sendSelectedIds(selectedIds, 'excel');
+    //     }
+    // }
+
+
+    // async function exportPDF() {
+    //     let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    //     let selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value).filter(id => id !== 'on');
+
+    //     if (selectedIds.length === 0) {
+    //         alert('Please select at least one course to export.');
+    //     } else {
+    //         sendSelectedIds(selectedIds, 'pdf');
+    //     }
+    // }
+
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Function to send selected course IDs for CSV export
+        async function exportCoursesCSV(ids) {
+            try {
+                const csrftoken = getCookie('csrftoken');
+                let formData = new FormData();
+                formData.append('ids', ids.join(','));  // Convert ids array to comma-separated string
+                formData.append('csrfmiddlewaretoken', csrftoken);
+
+                let response = await fetch('/export_courses_csv/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                // Download the CSV file
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'course_list_csv.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error:', error);
+                // Handle error appropriately (e.g., show error message to user)
+            }
+        }
+
+        // Function to send selected course IDs for Excel export
+        async function exportCoursesExcel(ids) {
+            try {
+                const csrftoken = getCookie('csrftoken');
+                let formData = new FormData();
+                formData.append('ids', ids.join(','));  // Convert ids array to comma-separated string
+
+                formData.append('csrfmiddlewaretoken', csrftoken);
+
+                let response = await fetch('/export_courses_excel/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                // Download the Excel file
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'course_list_excel.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error:', error);
+                // Handle error appropriately (e.g., show error message to user)
+            }
+        }
+
+        // Function to send selected course IDs for PDF export
+        async function exportCoursesPDF(ids) {
+            try {
+                const csrftoken = getCookie('csrftoken');
+                let formData = new FormData();
+                formData.append('ids', ids.join(','));  // Convert ids array to comma-separated string
+
+                formData.append('csrfmiddlewaretoken', csrftoken);
+
+                let response = await fetch('/export_courses_pdf/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                // Download the PDF file
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'course_list_pdf.pdf';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error:', error);
+                // Handle error appropriately (e.g., show error message to user)
+            }
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Example: Trigger CSV export on button click
+        document.getElementById('export-csv-link').addEventListener('click', function () {
+            // Replace with your logic to get selected course IDs
+            // const selectedIds = [1, 2]; // Example: Replace with actual selected IDs
+            let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            let selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value).filter(id => id !== 'on');
+            console.log(selectedIds);  // Check the selected IDs in the console
+
+            if (selectedIds.length > 0) {
+                exportCoursesCSV(selectedIds);
+            } else {
+                alert('Please select at least one course to export.');
+            }
+        });
+
+        // Example: Trigger Excel export on button click
+        document.getElementById('export-excel-link').addEventListener('click', function () {
+            // Replace with your logic to get selected course IDs
+            // const selectedIds = [1, 2]; // Example: Replace with actual selected IDs
+            let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            let selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value).filter(id => id !== 'on');
+            console.log(selectedIds);  // Check the selected IDs in the console
+
+            if (selectedIds.length > 0) {
+                exportCoursesExcel(selectedIds);
+            } else {
+                alert('Please select at least one course to export.');
+            }
+        });
+
+        // Example: Trigger PDF export on button click
+        document.getElementById('export-pdf-link').addEventListener('click', function () {
+            // Replace with your logic to get selected course IDs
+            // const selectedIds = [1, 2]; // Example: Replace with actual selected IDs
+            let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            let selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value).filter(id => id !== 'on');
+            console.log(selectedIds);  // Check the selected IDs in the console
+
+            if (selectedIds.length > 0) {
+                exportCoursesPDF(selectedIds);
+            } else {
+                alert('Please select at least one course to export.');
+            }
+        });
+
+    });
 
 </script>
 {% endblock %}
