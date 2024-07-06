@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, logout
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse, HttpResponse
+from django.views.generic import ListView
 from rest_framework import generics, status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
@@ -33,6 +34,7 @@ from django.utils.html import strip_tags
 from rest_framework.exceptions import AuthenticationFailed
 import jwt, datetime
 from .authentication import JWTAuthentication
+from rest_framework.decorators import api_view, permission_classes
 # ----------------------------- Admin Views ----------------------------
 
 
@@ -87,6 +89,9 @@ class AdminLoginAPI(APIView):
     def post(self, request):
         username = request.data['username']
         password = request.data['password']
+        
+        print(username)
+        print(password)
 
         # user = AdminLogin.objects.filter(email=email).first()
         user = AdminLogin.objects.filter(username = username).first()
@@ -99,7 +104,7 @@ class AdminLoginAPI(APIView):
 
         payload = {
             'id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=120),
             'iat': datetime.datetime.utcnow()
         }
     
@@ -153,21 +158,100 @@ class LogoutView(APIView):
 
 # ---------------------------- Course Views ---------------------------------
 
-def course_view(request):
-    data = Course.objects.order_by('Title').all()
-    # paginator = Paginator(data, 5)
-    # page_number = request.GET.get("page")
-    # try:
-    #     page_obj = paginator.page(page_number)
-    # except PageNotAnInteger:
-    #     page_obj = paginator.page(1)
-    # except EmptyPage:
-    #     page_obj = paginator.page(paginator.num_pages)
-    paginator = Paginator(data, 5)  # Show 5 contacts per page.
+class KeywordListView(ListView):
+    paginate_by = 6
+    model = Course
 
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-    return render(request, 'Admin_Login_App/courses.html', {'page_obj': page_obj})
+# def course_view(request):
+#     # Get all courses ordered by title
+#     data = Course.objects.order_by('Title').all()
+    
+#     # Get the current page number from the request
+#     page = request.GET.get('page', 1)
+    
+#     # Create a Paginator object with 3 items per page
+#     paginator = Paginator(data, per_page=3)
+    
+#     # Get the page object for the current page
+#     page_object = paginator.get_page(page)
+    
+#     # Adjust the elided pages range
+#     page_object.adjusted_elided_pages = paginator.get_elided_page_range(page)
+    
+#     # Prepare the context for rendering the template
+#     context = {"page_obj": page_object}
+    
+#     # Render the template with the context
+#     return render(request, 'Admin_Login_App/courses.html', context)
+
+
+def course_view(request, page=1, per_page=1):
+    # Get all courses ordered by title
+    print(page)
+    data = Course.objects.order_by('id').all()
+    
+    # Create a Paginator object with 3 items per page
+    paginator = Paginator(data, per_page)
+    print("Hiii  ",paginator)
+    
+    # Get the page object for the requested page
+    try:
+        page_object = paginator.page(page)
+        print(page_object)
+    except PageNotAnInteger:
+        page_object = paginator.page(1)
+    except EmptyPage:
+        page_object = paginator.page(paginator.num_pages)
+    
+    # Prepare the context for rendering the template
+    context = {
+        "page_obj": page_object
+    }
+    
+    # Render the template with the context
+    return render(request, 'Admin_Login_App/courses.html', context)
+
+
+# def listing(request, page):
+#     data = Course.objects.order_by('Title').all()
+    
+#     paginator = Paginator(data, per_page=3)
+    
+#     page_object = paginator.get_page(page)
+#     page_object.adjusted_elided_pages = paginator.get_elided_page_range(page)
+#     context = {"page_obj": page_object}
+#     return render(request, 'Admin_Login_App/courses.html', context)
+
+# def listing(request, page, per_page=3):
+#     data = Course.objects.all().order_by('id')
+    
+#     paginator = Paginator(data, per_page)
+    
+#     try:
+#         page_object = paginator.page(page)
+#     except PageNotAnInteger:
+#         # If page is not an integer, deliver first page.
+#         page_object = paginator.page(1)
+#     except EmptyPage:
+#         # If page is out of range (e.g. 9999), deliver last page of results.
+#         page_object = paginator.page(paginator.num_pages)
+    
+#     # Optionally adjust for elided pages if needed
+#     page_object.adjusted_elided_pages = paginator.get_elided_page_range(page)
+    
+#     context = {
+#         "page_obj": page_object,
+#         "per_page": per_page,  # Pass per_page to the context
+#         "paginator": paginator,
+#     }
+#     return render(request, 'Admin_Login_App/courses.html', context)
+
+# def listing(request):
+#     courses = Course.objects.all().order_by('id')  # Ordering by 'id' as an example
+#     paginator = Paginator(courses, per_page=3)
+#     page_number = request.GET.get('page')
+#     page_obj = paginator.get_page(page_number)
+#     return render(request, 'Admin_Login_App/courses.html', {'page_obj': page_obj})
 
 def course_page_view(request):
     form = CoursesForm()
@@ -194,8 +278,95 @@ def delete_course(request, id):
 
 # ---------------------------- Course API -----------------------------------
 
+class AllKeywordsView(ListView):
+    model = Course
+    template_name = "Admin_Login_App/course_list.html"
+
+# def listing_api(request):
+#     page_number = int(request.GET.get("page", 1))
+#     per_page = int(request.GET.get("per_page", 3))
+#     startswith = request.GET.get("startswith", "")
+#     courses = Course.objects.filter(
+#         Title__startswith=startswith
+#     )
+#     paginator = Paginator(courses, per_page)
+#     page_obj = paginator.get_page(page_number)
+#     data = [{"id": kw.id, "Title": kw.Title, "Technologies": kw.Technologies, "Description": kw.Description ,"Images": kw.Images.url, "status": kw.status} for kw in page_obj.object_list]
+
+#     pagination = {
+#         "current": page_obj.number,
+#         "has_next": page_obj.has_next(),
+#         "has_previous": page_obj.has_previous(),
+#         "total_pages": paginator.num_pages,
+#         "page_range": list(paginator.get_elided_page_range(page_number)),
+#     }
+
+#     payload = {
+#         "data": data,
+#         "pagination": pagination
+#     }
+#     return JsonResponse(payload)
+
+
+def listing_api(request):
+    print(request)
+    page_number = request.GET.get("page", 1)
+    per_page = request.GET.get("per_page", 1)
+    startswith = request.GET.get("startswith", "")
+    
+    # Filtering courses based on startswith
+    courses = Course.objects.filter(id__startswith=startswith)
+    
+    # Create a Paginator object with per_page items per page
+    paginator = Paginator(courses, per_page)
+    
+    try:
+        page_obj = paginator.page(page_number)
+        print(page_obj)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+    
+    # Define functions to clean description and technologies
+    def clean_description(description):
+        # Remove HTML tags using regex
+        clean_description = re.sub(r'<[^>]*>', '', description)
+        return clean_description.strip()  # Strip any leading or trailing whitespace
+    
+    def clean_technologies(technologies):
+        # Remove unwanted commas using regex
+        clean_technologies = re.sub(r',+$', '', technologies)
+        return clean_technologies.strip()  # Strip any leading or trailing whitespace
+    
+    # Generate JSON response with cleaned fields
+    data = [{
+        "id": course.id,
+        "Title": course.Title,
+        "Technologies": clean_technologies(course.Technologies),
+        "Description": clean_description(course.Description),
+        "Images": course.Images.url,  # Assuming Images field is a FileField or ImageField
+        "status": course.status
+    } for course in page_obj.object_list]
+
+    pagination = {
+        "current": page_obj.number,
+        "has_next": page_obj.has_next(),
+        "has_previous": page_obj.has_previous(),
+        "total_pages": paginator.num_pages,
+        "page_range": list(paginator.get_elided_page_range(page_number)),
+    }
+
+    payload = {
+        "data": data,
+        "pagination": pagination
+    }
+    
+    # Return JSON response
+    return JsonResponse(payload)
+
 class CourseListCreateView(generics.ListCreateAPIView):
-    queryset = Course.objects.all().order_by('-id')
+    queryset = Course.objects.all()
     serializer_class = CourseSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]

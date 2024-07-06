@@ -6,7 +6,9 @@ from .views import (
     AdminLoginAPI, get_admin_usernames,
     CourseListCreateView, CourseDetailView, CourseUpdateView, CourseDeleteView,
     course_view, course_page_view, navbar_save_view,navbar_view_course,
-    update_course, delete_course, view_course, export_courses_csv, export_courses_excel, export_courses_pdf, RegisterView, LogoutView
+    update_course, delete_course, view_course, export_courses_csv, export_courses_excel, export_courses_pdf, 
+    listing_api, KeywordListView,
+    RegisterView, LogoutView
     # MyTokenObtainPairView, MyTokenRefreshView
 )
 
@@ -31,7 +33,9 @@ urlpatterns = [
     path('api/update_courses/<int:pk>/', CourseUpdateView.as_view(), name='course_update'),
     path('api/delete_courses/<int:pk>/', CourseDetailView.as_view(), name='course_delete'),
     
-    path('courses/', course_view, name='courses'),
+    # path('courses/', course_view, name='courses'),
+    # path('courses/', course_view, name='courses'),  # Main courses view
+    # path('courses/<int:page>/', course_view, name='course-by-page'),  # Paginated view
     path('course_page/', course_page_view, name='course_page'),
     path('navbar_save_course/', navbar_save_view, name='navbar_save_course'),
     path('navbar_view_course/', navbar_view_course, name='navbar_view_course'),
@@ -46,5 +50,17 @@ urlpatterns = [
     path('export_courses_csv/', export_courses_csv, name='export_courses_csv'),
     path('export_courses_excel/', export_courses_excel, name='export_courses_excel'),
     path('export_courses_pdf/', export_courses_pdf, name='export_courses_pdf'),
+    
+    path("course", KeywordListView.as_view(),name="course"),
+    # path("course/<int:page>/", listing, name="course-page"),
+    # path("page/", listing_api, name="course-api"),
+    # path("page/<int:page>/", listing_api, name="course-api"),
+    
+    
+    
+    path('courses/', course_view, name='courses'),  # Main courses view
+    path('page/', listing_api, name='course-api'),  # API endpoint for courses pagination
+    path('page/<int:page>/', course_view, name='course-by-page'),  # Paginated view
+    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

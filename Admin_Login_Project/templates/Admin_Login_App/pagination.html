@@ -1,0 +1,194 @@
+{% extends 'Admin_Login_App/base.html' %}
+{% load static %}
+{% load bootstrap_icons %}
+
+<!-- title -->
+{% block title %} Courses {% endblock %}
+
+<!-- Link css -->
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/header.css' %}">
+<link rel="stylesheet" href="{% static 'css/course_list.css' %}">
+<link rel="stylesheet" href="{% static 'css/course_page.css' %}">
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+
+{% endblock %}
+
+<!-- link js -->
+{% block link_js %}
+
+<script type="text/javascript" src="{% static 'ckeditor/ckeditor-init.js' %}" async></script>
+<script type="text/javascript" src="{% static 'ckeditor/ckeditor/ckeditor.js' %}" async></script>
+
+{% endblock %}
+
+<!-- header -->
+{% block header %}
+{% include 'Admin_Login_App/Admin_Header.html' %}
+{% endblock %}
+
+<!-- body content -->
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row bg-body-tertiary">
+
+        <!-- side navbar -->
+
+        {% block sidenavbar %}
+
+        {% include 'Admin_Login_App/Side_Navbar.html' %}
+
+        {% endblock %}
+
+        <!-- navbar -->
+        <div class="col-10 pb-5" style="background-color: #f6f6f6;">
+            <div class="row">
+
+                {% block navbar %}
+
+                <div id="navbar-content">
+
+                    {% include 'Admin_Login_App/navbar.html' %}
+
+                </div>
+
+                {% endblock %}
+
+
+                {% block course_list %}
+
+                <div id="course-content">
+                    <!-- This is where the course content will be displayed -->
+
+                    {% include 'Admin_Login_App/keyword_list.html' %}
+
+                </div>
+                {% endblock %}
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function fetchCourses(page_number) {
+
+        try {
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+            const response = await fetch(`/courses/${page}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                }
+            });
+
+            const data = await response.json();
+            const table = document.getElementById('course-table');
+
+            // Clear the table first
+            table.innerHTML = '';
+
+            // Create table header
+            const header = table.createTHead();
+            const headerRow = header.insertRow(0);
+            const headers = ['S.NO', 'Course Name', 'Topics', 'Images', 'Enable/Disable', 'Action'];
+
+            const selectAllCell = headerRow.insertCell(0);
+            const selectAllCheckbox = document.createElement('input');
+            selectAllCheckbox.type = 'checkbox';
+            selectAllCheckbox.addEventListener('change', (event) => {
+                const isChecked = event.target.checked;
+                const checkboxes = document.querySelectorAll('.rowCheckbox');
+                checkboxes.forEach(checkbox => checkbox.checked = isChecked);
+            });
+            selectAllCell.appendChild(selectAllCheckbox);
+
+            headers.forEach((headerText, index) => {
+                const cell = headerRow.insertCell(index + 1); // +1 to account for "Select All" checkbox
+                cell.outerHTML = `<th>${headerText}</th>`;
+            });
+
+            // Create table body
+            const body = table.createTBody();
+
+            data.forEach((course, rowIndex) => {
+                const row = body.insertRow(rowIndex);
+                // Insert checkbox cell
+                const checkboxCell = row.insertCell(0);
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = course.id;
+                checkbox.name = 'rowCheckbox';
+                checkbox.classList.add('rowCheckbox');
+                checkboxCell.appendChild(checkbox);
+
+                const image = document.createElement('img');
+                image.src = course.Images;
+                image.alt = 'course img';
+                image.height = "50";
+                image.width = "50";
+
+                row.insertCell(1).textContent = course.id;
+                row.insertCell(2).textContent = course.Title;
+                const Technologies = course.Technologies.replace(/,+/g, ',').replace(/^,|,$/g, '');
+                row.insertCell(3).textContent = Technologies;
+                row.insertCell(4).appendChild(image);
+
+                // Enable and disable
+                const statusCell = row.insertCell(5);
+                const switchLabel = document.createElement('label');
+                switchLabel.classList.add('switch');
+
+                const statusCheckbox = document.createElement('input');
+                statusCheckbox.type = 'checkbox';
+                statusCheckbox.checked = course.status; // Assuming 'course.status' is a boolean
+
+                // statusCheckbox.addEventListener('change', () => showAlert(
+                //     statusCheckbox.checked ? 'Enable Successfully' : 'Disable Successfully',
+                //     () => toggleCourseStatus(course.id, statusCheckbox.checked),
+                //     () => statusCheckbox.checked = !statusCheckbox.checked
+                // ));
+
+                statusCheckbox.addEventListener('change', async () => {
+                    try {
+                        await toggleCourseStatus(course.id, statusCheckbox.checked);
+                        showMessage(statusCheckbox.checked ? 'Enabled Successfully' : 'Disabled Successfully');
+                    } catch (error) {
+                        console.error(error);
+                        showMessage('Failed to update course status. Please try again later.');
+                    }
+                });
+
+                const slider = document.createElement('span');
+                slider.classList.add('slider');
+
+                switchLabel.appendChild(statusCheckbox);
+                switchLabel.appendChild(slider);
+                statusCell.appendChild(switchLabel);
+
+                // Action
+                const updateButtonCell = row.insertCell(6);
+
+                const updateButton = document.createElement('button');
+                updateButton.classList.add('edit-button');
+                updateButton.innerHTML = `{% bs_icon "pencil-fill" %}`;
+                updateButton.addEventListener('click', () => updateCoursePage(`/update_course/${course.id}`));
+                updateButtonCell.appendChild(updateButton);
+
+                const viewButton = document.createElement('button');
+                viewButton.classList.add('action-button');
+                viewButton.innerHTML = `{% bs_icon "eye-fill" %}`;
+                viewButton.addEventListener('click', () => viewCoursePage(`/view_course/${course.id}`));
+                updateButtonCell.appendChild(viewButton);
+                updateButtonCell.appendChild(updateButton);
+            });
+        } catch (error) {
+            console.error('Error fetching courses:', error);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', fetchCourses(page_number))
+</script>
+
+{% endblock %}

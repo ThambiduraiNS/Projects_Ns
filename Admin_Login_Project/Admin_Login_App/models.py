@@ -87,6 +87,9 @@ class Course(models.Model):
     is_active = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.Title
+    
 class Technology(models.Model):
     Technologies = models.CharField(max_length=150)
 

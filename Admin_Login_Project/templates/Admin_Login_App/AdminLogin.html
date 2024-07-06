@@ -99,7 +99,7 @@
 
             var data = {
                 username: username,
-                password: password
+                password: password,
             };
 
             // const jwtToken = localStorage.getItem('accessToken');
@@ -111,6 +111,7 @@
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    // "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
                     // "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE4ODkzNzI3LCJpYXQiOjE3MTg4OTAxMjcsImp0aSI6ImFlMDQ5MzMyYjUxMjQ5YjI4YzI1YjgxMmNiM2Y3MmUyIiwidXNlcl9pZCI6MX0.7vJBpo6tMYmdtk24qY62GcJMpVh2dv4WcA8_hlxFzVE` 
                 },
                 body: JSON.stringify(data)

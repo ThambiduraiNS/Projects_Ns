@@ -1,0 +1,55 @@
+{% extends "Admin_Login_App/base.html" %}
+{% load static %}
+{% load bootstrap_icons %}
+
+{% block content %}
+<!-- <table>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Technologies</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Images</th>
+    </tr>
+    {% for kw in page_obj %}
+    <tr>
+        <td>{{ kw.id }}</td>
+        <td>{{ kw.Title }}</td>
+        <td>{{ kw.Technologies }}</td>
+        <td>{{ kw.Description }}</td>
+        <td>{{ kw.status }}</td>
+        <td><img src="{{ kw.Images.url }}" alt="{{ kw.Title }}" height="50" width="50"></td>
+    </tr>
+    {% endfor %}
+</table> -->
+<table class="table table-bordered" id="course-table">
+
+</table>
+{% endblock %}
+
+{% block pagination %}
+<div class="pagination" id="pagination-controls">
+    {% if page_obj.has_previous %}
+    <a href="{% url 'course-by-page' page_obj.previous_page_number %}" class="pagination-link prev">{% bs_icon
+        'chevron-left' %}</a>
+    {% endif %}
+
+    {% for page_number in page_obj.paginator.page_range %}
+    <a href="{% url 'course-by-page' page_number %}"
+        class="pagination-link {% if page_number == page_obj.number %}current{% endif %}">
+        {{ page_number }}
+    </a>
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+    <a href="{% url 'course-by-page' page_obj.next_page_number %}" class="pagination-link next">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right"
+            viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+                d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+        </svg>
+    </a>
+    {% endif %}
+</div>
+{% endblock %}

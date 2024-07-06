@@ -7,31 +7,72 @@
         <div class="col-12 mx-auto">
             <div class="panel panel-default border">
                 <div class="panel-heading ps-3">
-                    <h3 class="panel-title border-bottom pb-2 h3-div"> {% bs_icon 'list-task' %} <span
-                            class="Add_Course">Courses List</span></h3>
+                    <h3 class="panel-title border-bottom pb-2 h3-div">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-list-task" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z" />
+                            <path
+                                d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z" />
+                            <path fill-rule="evenodd"
+                                d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z" />
+                        </svg>
+                        <span class="Add_Course">Courses List</span>
+                    </h3>
                     <p class="custom-alert-div" id="custom-alert-message"></p>
                 </div>
 
                 <div class="panel-body bg-white px-3 py-3">
-                    <table class="table table-bordered" id="course-table"></table>
-                
-                    <div class="pagination">
-                        <span class="step-links">
-                            {% if page_obj.has_previous %}
-                            <a href="?page=1">&laquo; first</a>
-                            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-                            {% endif %}
 
-                            <span class="current">
-                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                            </span>
+                    <!-- course list table -->
 
-                            {% if page_obj.has_next %}
-                            <a href="?page={{ page_obj.next_page_number }}">next</a>
-                            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-                            {% endif %}
-                        </span>
+                    <table class="table table-bordered" id="course-table">
+
+                    </table>
+
+                    <div>
+                        <label for="perPageSelect">Items per page:</label>
+                        <select id="perPageSelect">
+                            <option value="1">1</option>
+                            <option value="3" selected>3</option>
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
                     </div>
+
+                    <!-- {% for kw in page_obj %}
+                    <pre>{{kw}}</pre>{% endfor %} -->
+
+                    <div class="pagination" id="pagination-controls">
+                        {% if page_obj.has_previous %}
+                        <a href="{% url 'course-by-page' page_obj.previous_page_number %}"
+                            class="pagination-link prev">{% bs_icon 'chevron-left' %}</a>
+                        {% endif %}
+
+                        {% for page_number in page_obj.paginator.page_range %}
+                        <a href="{% url 'course-by-page' page_number %}"
+                            class="pagination-link {% if page_number == page_obj.number %}current{% endif %}">
+                            {{ page_number }}
+                        </a>
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <a href="{% url 'course-by-page' page_obj.next_page_number %}" class="pagination-link next">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-chevron-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                    d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+                            </svg>
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- <div id="pagination">
+                        
+                    </div> -->
+
                 </div>
             </div>
         </div>
@@ -49,126 +90,213 @@
         }, 3000);
     }
 
-    // function closeAlert() {
-    //     const alertBox = document.getElementById('custom-alert');
-    //     alertBox.classList.add('hidden');
-    //     alertBox.style.display = 'none';
-    // }
 
-    async function fetchCourses() {
+    let currentPage = 1;
+    const perPage = 1;
+
+    document.getElementById('perPageSelect').addEventListener('change', (event) => {
+        perPage = parseInt(event.target.value, 1);
+        fetchCourses(currentPage);
+    });
+
+    async function fetchCourses(page = 1) {
         try {
-            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
-            const response = await fetch('/api/courses/', {
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzIwMTIyNTEyLCJpYXQiOjE3MjAxMTUzMTJ9.Mhrvmqk77CfEM4Hx-2SbGY3nhBocvAHOUGoE4663K58';
+            const response = await fetch(`/page/?page=${page}&per_page=${perPage}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 }
             });
 
-            const data = await response.json();
-            const table = document.getElementById('course-table');
+            if (!response.ok) {
+                throw new Error('Failed to fetch courses');
+            }
 
-            // Clear the table first
-            table.innerHTML = '';
+            // const data = await response.json();
+            // console.log(data)
 
-            // Create table header
-            const header = table.createTHead();
-            const headerRow = header.insertRow(0);
-            const headers = ['S.NO', 'Course Name', 'Topics', 'Images', 'Enable/Disable', 'Action'];
+            const responseData = await response.json();
+            const courses = responseData.data;
 
-            const selectAllCell = headerRow.insertCell(0);
-            const selectAllCheckbox = document.createElement('input');
-            selectAllCheckbox.type = 'checkbox';
-            selectAllCheckbox.addEventListener('change', (event) => {
-                const isChecked = event.target.checked;
-                const checkboxes = document.querySelectorAll('.rowCheckbox');
-                checkboxes.forEach(checkbox => checkbox.checked = isChecked);
-            });
-            selectAllCell.appendChild(selectAllCheckbox);
+            if (!Array.isArray(courses)) {
+                throw new Error('Expected an array of courses from API response');
+            }
 
-            headers.forEach((headerText, index) => {
-                const cell = headerRow.insertCell(index + 1); // +1 to account for "Select All" checkbox
-                cell.outerHTML = `<th>${headerText}</th>`;
-            });
+            renderTable(courses);
+            renderPagination(responseData.current_page, responseData.pagination.total_pages);
 
-            // Create table body
-            const body = table.createTBody();
-
-            data.forEach((course, rowIndex) => {
-                const row = body.insertRow(rowIndex);
-                // Insert checkbox cell
-                const checkboxCell = row.insertCell(0);
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.value = course.id;
-                checkbox.name = 'rowCheckbox';
-                checkbox.classList.add('rowCheckbox');
-                checkboxCell.appendChild(checkbox);
-
-                const image = document.createElement('img');
-                image.src = course.Images;
-                image.alt = 'course img';
-                image.height = "50";
-                image.width = "50";
-
-                row.insertCell(1).textContent = course.id;
-                row.insertCell(2).textContent = course.Title;
-                const Technologies = course.Technologies.replace(/,+/g, ',').replace(/^,|,$/g, '');
-                row.insertCell(3).textContent = Technologies;
-                row.insertCell(4).appendChild(image);
-
-                // Enable and disable
-                const statusCell = row.insertCell(5);
-                const switchLabel = document.createElement('label');
-                switchLabel.classList.add('switch');
-
-                const statusCheckbox = document.createElement('input');
-                statusCheckbox.type = 'checkbox';
-                statusCheckbox.checked = course.status; // Assuming 'course.status' is a boolean
-
-                // statusCheckbox.addEventListener('change', () => showAlert(
-                //     statusCheckbox.checked ? 'Enable Successfully' : 'Disable Successfully',
-                //     () => toggleCourseStatus(course.id, statusCheckbox.checked),
-                //     () => statusCheckbox.checked = !statusCheckbox.checked
-                // ));
-
-                statusCheckbox.addEventListener('change', async () => {
-                    try {
-                        await toggleCourseStatus(course.id, statusCheckbox.checked);
-                        showMessage(statusCheckbox.checked ? 'Enabled Successfully' : 'Disabled Successfully');
-                    } catch (error) {
-                        console.error(error);
-                        showMessage('Failed to update course status. Please try again later.');
-                    }
-                });
-
-                const slider = document.createElement('span');
-                slider.classList.add('slider');
-
-                switchLabel.appendChild(statusCheckbox);
-                switchLabel.appendChild(slider);
-                statusCell.appendChild(switchLabel);
-
-                // Action
-                const updateButtonCell = row.insertCell(6);
-
-                const updateButton = document.createElement('button');
-                updateButton.classList.add('edit-button');
-                updateButton.innerHTML = `{% bs_icon "pencil-fill" %}`;
-                updateButton.addEventListener('click', () => updateCoursePage(`/update_course/${course.id}`));
-                updateButtonCell.appendChild(updateButton);
-
-                const viewButton = document.createElement('button');
-                viewButton.classList.add('action-button');
-                viewButton.innerHTML = `{% bs_icon "eye-fill" %}`;
-                viewButton.addEventListener('click', () => viewCoursePage(`/view_course/${course.id}`));
-                updateButtonCell.appendChild(viewButton);
-                updateButtonCell.appendChild(updateButton);
-            });
         } catch (error) {
             console.error('Error fetching courses:', error);
         }
     }
+
+    function renderTable(courses) {
+
+        const table = document.getElementById('course-table');
+
+        // Clear the table first
+        table.innerHTML = '';
+
+        // Create table header
+        const header = table.createTHead();
+        const headerRow = header.insertRow(0);
+        const headers = ['S.NO', 'Course Name', 'Topics', 'Images', 'Enable/Disable', 'Action'];
+
+        const selectAllCell = headerRow.insertCell(0);
+        const selectAllCheckbox = document.createElement('input');
+        selectAllCheckbox.type = 'checkbox';
+        selectAllCheckbox.addEventListener('change', (event) => {
+            const isChecked = event.target.checked;
+            const checkboxes = document.querySelectorAll('.rowCheckbox');
+            checkboxes.forEach(checkbox => checkbox.checked = isChecked);
+        });
+        selectAllCell.appendChild(selectAllCheckbox);
+
+        headers.forEach((headerText, index) => {
+            const cell = headerRow.insertCell(index + 1); // +1 to account for "Select All" checkbox
+            cell.outerHTML = `<th>${headerText}</th>`;
+        });
+
+        // Create table body
+        const body = table.createTBody();
+
+        courses.forEach((course, index) => {
+            console.log(course)
+            const row = body.insertRow(index);
+            // Insert checkbox cell
+            const checkboxCell = row.insertCell(0);
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = course.id;
+            checkbox.name = 'rowCheckbox';
+            checkbox.classList.add('rowCheckbox');
+            checkboxCell.appendChild(checkbox);
+
+            const image = document.createElement('img');
+            image.src = course.Images;
+            image.alt = 'course img';
+            image.height = "50";
+            image.width = "50";
+
+            row.insertCell(1).textContent = course.id;
+            row.insertCell(2).textContent = course.Title;
+            const Technologies = course.Technologies.replace(/,+/g, ',').replace(/^,|,$/g, '');
+            row.insertCell(3).textContent = Technologies;
+            row.insertCell(4).appendChild(image);
+
+            // Enable and disable
+            const statusCell = row.insertCell(5);
+            const switchLabel = document.createElement('label');
+            switchLabel.classList.add('switch');
+
+            const statusCheckbox = document.createElement('input');
+            statusCheckbox.type = 'checkbox';
+            statusCheckbox.checked = course.status; // Assuming 'course.status' is a boolean
+
+            // statusCheckbox.addEventListener('change', () => showAlert(
+            //     statusCheckbox.checked ? 'Enable Successfully' : 'Disable Successfully',
+            //     () => toggleCourseStatus(course.id, statusCheckbox.checked),
+            //     () => statusCheckbox.checked = !statusCheckbox.checked
+            // ));
+
+            statusCheckbox.addEventListener('change', async () => {
+                try {
+                    await toggleCourseStatus(course.id, statusCheckbox.checked);
+                    showMessage(statusCheckbox.checked ? 'Enabled Successfully' : 'Disabled Successfully');
+                } catch (error) {
+                    console.error(error);
+                    showMessage('Failed to update course status. Please try again later.');
+                }
+            });
+
+            const slider = document.createElement('span');
+            slider.classList.add('slider');
+
+            switchLabel.appendChild(statusCheckbox);
+            switchLabel.appendChild(slider);
+            statusCell.appendChild(switchLabel);
+
+            // Action
+            const updateButtonCell = row.insertCell(6);
+
+            const updateButton = document.createElement('button');
+            updateButton.classList.add('edit-button');
+            updateButton.innerHTML = `{% bs_icon 'pencil-fill' %}`;
+            updateButton.addEventListener('click', () => updateCoursePage(`/update_course/${course.id}`));
+            updateButtonCell.appendChild(updateButton);
+
+            const viewButton = document.createElement('button');
+            viewButton.classList.add('action-button');
+            viewButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">\
+                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />\
+                    <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />\
+                </svg>';
+            viewButton.addEventListener('click', () => viewCoursePage(`/view_course/${course.id}`));
+            updateButtonCell.appendChild(viewButton);
+            updateButtonCell.appendChild(updateButton);
+        });
+    }
+
+
+    function renderPagination(currentPage, total_pages) {
+    const pagination = document.getElementById('pagination-controls');
+    pagination.innerHTML = ''; // Clear previous pagination
+
+    // Previous button
+    const prevButton = document.createElement('a');
+    prevButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">\
+  <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>\
+</svg>';
+    prevButton.href = '#';
+    prevButton.classList.add('pagination-link', 'prev');
+    prevButton.style.marginRight = '5px';
+    prevButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (currentPage > 1) {
+            currentPage--;
+            fetchCourses(currentPage);
+        }
+    });
+    pagination.appendChild(prevButton);
+
+    // Page numbers
+    for (let page = 1; page <= total_pages; page++) {
+        const pageButton = document.createElement('a');
+        pageButton.textContent = page;
+        pageButton.href = '#';
+        pageButton.classList.add('pagination-link');
+        if (page === currentPage) {
+            pageButton.classList.add('current');
+        }
+        pageButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (page !== currentPage) {
+                currentPage = page;
+                fetchCourses(currentPage);
+            }
+        });
+        pagination.appendChild(pageButton);
+    }
+
+    // Next button
+    const nextButton = document.createElement('a');
+    nextButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">\
+  <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>\
+</svg>';
+    nextButton.href = '#';
+    nextButton.classList.add('pagination-link', 'next');
+    nextButton.style.marginLeft = '5px';
+    nextButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (currentPage < total_pages) {
+            currentPage++;
+            fetchCourses(currentPage);
+        }
+    });
+    pagination.appendChild(nextButton);
+}
+
 
     async function toggleCourseStatus(courseId, newStatus) {
         try {
@@ -196,7 +324,9 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', fetchCourses);
+    // document.addEventListener('DOMContentLoaded', fetchCourses);
+
+    document.addEventListener('DOMContentLoaded', () => fetchCourses(currentPage));
 </script>
 
 {% endblock %}

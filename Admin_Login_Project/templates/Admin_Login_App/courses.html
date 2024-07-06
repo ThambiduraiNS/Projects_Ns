@@ -65,8 +65,6 @@
 
                 </div>
                 {% endblock %}
-
-
             </div>
         </div>
     </div>
@@ -251,7 +249,7 @@
         console.log("ding");
         console.log(courseId);
         try {
-            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzIwMTIyNTEyLCJpYXQiOjE3MjAxMTUzMTJ9.Mhrvmqk77CfEM4Hx-2SbGY3nhBocvAHOUGoE4663K58';
 
             const response = await fetch(`/api/courses/${courseId}/`, {
                 method: 'GET',
@@ -343,7 +341,7 @@
             // formData.append('status', status);
 
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzIwMTIyNTEyLCJpYXQiOjE3MjAxMTUzMTJ9.Mhrvmqk77CfEM4Hx-2SbGY3nhBocvAHOUGoE4663K58';
             const response = await fetch(`/api/courses/`, {
                 method: 'POST',
                 headers: {
@@ -418,7 +416,7 @@
             }
             // formData.append('Status', status);
 
-            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzIwMTIyNTEyLCJpYXQiOjE3MjAxMTUzMTJ9.Mhrvmqk77CfEM4Hx-2SbGY3nhBocvAHOUGoE4663K58';
             const response = await fetch(`/api/update_courses/${courseId}/`, {
                 method: 'PUT',
                 headers: {
@@ -505,7 +503,7 @@
         let failedDeletions = [];
 
         for (let id of ids) {
-            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzE5MDQwNTM0LCJpYXQiOjE3MTkwMzY5MzR9.fS7bbykObcbfRRHX4ASsDb0Wpi6M1GtN8PzV48Ec2E0';
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzIwMTIyNTEyLCJpYXQiOjE3MjAxMTUzMTJ9.Mhrvmqk77CfEM4Hx-2SbGY3nhBocvAHOUGoE4663K58';
             const response = await fetch(`/api/delete_courses/${id}`, {
                 method: 'DELETE',
                 headers: {
