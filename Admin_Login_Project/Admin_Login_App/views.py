@@ -187,17 +187,14 @@ class KeywordListView(ListView):
 
 def course_view(request, page=1, per_page=1):
     # Get all courses ordered by title
-    print(page)
     data = Course.objects.order_by('id').all()
     
     # Create a Paginator object with 3 items per page
     paginator = Paginator(data, per_page)
-    print("Hiii  ",paginator)
     
     # Get the page object for the requested page
     try:
         page_object = paginator.page(page)
-        print(page_object)
     except PageNotAnInteger:
         page_object = paginator.page(1)
     except EmptyPage:
@@ -309,20 +306,18 @@ class AllKeywordsView(ListView):
 
 
 def listing_api(request):
-    print(request)
     page_number = request.GET.get("page", 1)
     per_page = request.GET.get("per_page", 1)
     startswith = request.GET.get("startswith", "")
     
     # Filtering courses based on startswith
     courses = Course.objects.filter(id__startswith=startswith)
-    
+    total_items = courses.count()
     # Create a Paginator object with per_page items per page
     paginator = Paginator(courses, per_page)
     
     try:
         page_obj = paginator.page(page_number)
-        print(page_obj)
     except PageNotAnInteger:
         page_obj = paginator.page(1)
     except EmptyPage:
@@ -359,7 +354,8 @@ def listing_api(request):
 
     payload = {
         "data": data,
-        "pagination": pagination
+        "pagination": pagination,
+        "total_items": total_items,
     }
     
     # Return JSON response

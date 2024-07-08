@@ -65,7 +65,8 @@ input:checked+.slider:before {
 
 /* edit button style */
 
-.edit-button , .action-button{
+.edit-button,
+.action-button {
     background: none;
     border: none;
     cursor: pointer;
@@ -79,8 +80,9 @@ input:checked+.slider:before {
 .action-button {
     color: #007bff;
 }
+
 .edit-button:hover {
-    color: #d79632; 
+    color: #d79632;
 }
 
 .action-button:hover {
@@ -148,12 +150,14 @@ input:checked+.slider:before {
     margin-top: 56px;
     text-align: end;
 }
+
 .custom-alert-buttons button {
     margin: 5px 5px;
     font-size: 10px;
 }
 
-.btn-yes, .btn-no{
+.btn-yes,
+.btn-no {
     background-color: #FFF;
     color: #338bea;
     padding: 3px 15px;
@@ -161,7 +165,8 @@ input:checked+.slider:before {
     border-radius: 3px;
 }
 
-.btn-yes:hover, .btn-no:hover {
+.btn-yes:hover,
+.btn-no:hover {
     background-color: #007bff;
     color: #fff;
 }
@@ -190,7 +195,8 @@ hr {
     float: left;
 }
 
-.right .confirm, p{
+.right .confirm,
+p {
     font-size: 12px;
 }
 
@@ -289,7 +295,8 @@ hr {
     padding: 5px 8px;
 }
 
-.bi-chevron-right, .bi-chevron-left {
+.bi-chevron-right,
+.bi-chevron-left {
     height: 26px;
     width: 20px;
 }
@@ -313,5 +320,33 @@ hr {
 .pagination-link.prev:hover,
 .pagination-link.next:hover {
     background-color: #0056b3;
+    color: #fff;
+}
+
+.per_page {
+    /* width: 50%; */
+    float: left;
+    margin: 14px 0px 0px 0px;
+}
+
+.per_page label {
+    text-transform: capitalize;
+    font-family: initial;
+    letter-spacing: 2px;
+}
+
+.items-info {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+#perPageSelect {
+    margin-left: 10px;
+    width: 20%;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 5px;
+    background: #007bff;
     color: #fff;
 }

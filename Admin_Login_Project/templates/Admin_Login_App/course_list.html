@@ -30,16 +30,14 @@
 
                     </table>
 
-                    <div>
+                    <div class="per_page">
                         <label for="perPageSelect">Items per page:</label>
                         <select id="perPageSelect">
-                            <option value="1">1</option>
-                            <option value="3" selected>3</option>
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="20">20</option>
-                            <option value="50">50</option>
+                            <option value="2">2</option>
+                            <option value="4" selected>4</option>
+                            <option value="6">6</option>
                         </select>
+                        <span id="item-range" class="item-range"></span>
                     </div>
 
                     <!-- {% for kw in page_obj %}
@@ -92,15 +90,16 @@
 
 
     let currentPage = 1;
-    const perPage = 1;
+    let perPage = 4;
 
     document.getElementById('perPageSelect').addEventListener('change', (event) => {
-        perPage = parseInt(event.target.value, 1);
-        fetchCourses(currentPage);
+        perPage = parseInt(event.target.value, 10);
+        fetchCourses(currentPage, perPage);
     });
 
-    async function fetchCourses(page = 1) {
+    async function fetchCourses(page = 1, per_page = 4) {
         try {
+            currentPage = page;
             const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzIwMTIyNTEyLCJpYXQiOjE3MjAxMTUzMTJ9.Mhrvmqk77CfEM4Hx-2SbGY3nhBocvAHOUGoE4663K58';
             const response = await fetch(`/page/?page=${page}&per_page=${perPage}`, {
                 method: 'GET',
@@ -124,7 +123,8 @@
             }
 
             renderTable(courses);
-            renderPagination(responseData.current_page, responseData.pagination.total_pages);
+            renderPagination(currentPage, responseData.pagination.total_pages);
+            updateItemRange(currentPage, perPage, responseData.total_items);
 
         } catch (error) {
             console.error('Error fetching courses:', error);
@@ -162,7 +162,6 @@
         const body = table.createTBody();
 
         courses.forEach((course, index) => {
-            console.log(course)
             const row = body.insertRow(index);
             // Insert checkbox cell
             const checkboxCell = row.insertCell(0);
@@ -239,63 +238,74 @@
     }
 
 
-    function renderPagination(currentPage, total_pages) {
-    const pagination = document.getElementById('pagination-controls');
-    pagination.innerHTML = ''; // Clear previous pagination
-
-    // Previous button
-    const prevButton = document.createElement('a');
-    prevButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">\
-  <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>\
-</svg>';
-    prevButton.href = '#';
-    prevButton.classList.add('pagination-link', 'prev');
-    prevButton.style.marginRight = '5px';
-    prevButton.addEventListener('click', (event) => {
-        event.preventDefault();
-        if (currentPage > 1) {
-            currentPage--;
-            fetchCourses(currentPage);
-        }
-    });
-    pagination.appendChild(prevButton);
-
-    // Page numbers
-    for (let page = 1; page <= total_pages; page++) {
-        const pageButton = document.createElement('a');
-        pageButton.textContent = page;
-        pageButton.href = '#';
-        pageButton.classList.add('pagination-link');
-        if (page === currentPage) {
-            pageButton.classList.add('current');
-        }
-        pageButton.addEventListener('click', (event) => {
-            event.preventDefault();
-            if (page !== currentPage) {
-                currentPage = page;
-                fetchCourses(currentPage);
-            }
-        });
-        pagination.appendChild(pageButton);
+    function updateItemRange(currentPage, perPage, totalItems) {
+        const itemRange = document.getElementById('item-range');
+        const startItem = (currentPage - 1) * perPage + 1;
+        const endItem = Math.min(currentPage * perPage, totalItems);
+        itemRange.textContent = `${startItem}-${endItem} of ${totalItems}`;
     }
 
-    // Next button
-    const nextButton = document.createElement('a');
-    nextButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">\
-  <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>\
+
+    function renderPagination(currentPage, total_pages) {
+        const pagination = document.getElementById('pagination-controls');
+        pagination.innerHTML = ''; // Clear previous pagination
+
+        // Previous button
+        if (currentPage > 1) {
+            const prevButton = document.createElement('a');
+            prevButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">\
+  <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>\
 </svg>';
-    nextButton.href = '#';
-    nextButton.classList.add('pagination-link', 'next');
-    nextButton.style.marginLeft = '5px';
-    nextButton.addEventListener('click', (event) => {
-        event.preventDefault();
-        if (currentPage < total_pages) {
-            currentPage++;
-            fetchCourses(currentPage);
+            prevButton.href = '#';
+            prevButton.classList.add('pagination-link', 'prev');
+            prevButton.style.marginRight = '5px';
+            prevButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                if (currentPage > 1) {
+                    currentPage--;
+                    fetchCourses(currentPage);
+                }
+            });
+            pagination.appendChild(prevButton);
         }
-    });
-    pagination.appendChild(nextButton);
-}
+        // Page numbers
+        for (let page = 1; page <= total_pages; page++) {
+            const pageButton = document.createElement('a');
+            pageButton.textContent = page;
+            pageButton.href = '#';
+            pageButton.classList.add('pagination-link');
+            if (page === currentPage) {
+                pageButton.classList.add('current');
+            }
+            pageButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                if (page !== currentPage) {
+                    currentPage = page;
+                    fetchCourses(currentPage);
+                }
+            });
+            pagination.appendChild(pageButton);
+        }
+
+        // Next button
+        if (currentPage < total_pages) {
+            const nextButton = document.createElement('a');
+            nextButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">\
+        <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>\
+        </svg>';
+            nextButton.href = '#';
+            nextButton.classList.add('pagination-link', 'next');
+            nextButton.style.marginLeft = '5px';
+            nextButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                if (currentPage < total_pages) {
+                    currentPage++;
+                    fetchCourses(currentPage);
+                }
+            });
+            pagination.appendChild(nextButton);
+        }
+    }
 
 
     async function toggleCourseStatus(courseId, newStatus) {
